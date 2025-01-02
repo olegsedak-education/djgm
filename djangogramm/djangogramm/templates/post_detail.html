@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+    <div class="list-group">
+        <h2 class="h2 p-2">{{ post.title }}</h2>
+        <p class="p-2">{{ post.text }}</p>
+        <div class="row">
+            {% for image in post.images.all %}
+                <div class="col-md-auto">
+                    <img src="{{ image.image.url }}" alt="{{ post.title }}" class="img-fluid">
+                </div>
+            {% empty %}
+                <p>No images</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

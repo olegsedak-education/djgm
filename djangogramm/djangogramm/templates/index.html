@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Djangogramm
+{% endblock %}
+
+{% block extra_head %}
+
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand mb-1 m-1 h1 text-center">
+            <img src="{% static 'images/Djangogramm.svg' %}" 
+                 width="30" height="30" class="d-inline-block align-top" alt="">Djangogramm</a>
+        <ul class="nav justify-content-end">
+            {% if user.is_authenticated %}
+                <li class="nav-item d-flex align-items-end" >
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-info btn-sm me-4 mt-3 ">Log Out</button>
+                    </form>
+{#                    <form action="{% url 'create_post' %}" method="post">#}
+                    <form action="{% url 'upload' %}" method="post">
+                            {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 ">Create post</button>
+                    </form>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'login' %}>Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'register' %}>Register</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    
+{% endblock %}
+
+{% block body %}
+    
+    {% block content %}
+        {% if user.is_authenticated %}
+           <div class="alert alert-info" role="alert"> Hi, {{ user.username }}!</div>
+        {% else %}
+        <div class="alert alert-secondary" role="alert">You are not logged in</div>
+        {% endif %}
+    {% endblock %}    
+    <h3 class="h3 text-center">Wellcome to Djangogramm</h3>
+    <p class="p-1 text-center">This is the main page</p>
+{% endblock %}

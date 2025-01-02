@@ -1,0 +1,22 @@
+% extends 'base.html' %}
+
+{% block title %}Profile of {{ user.username }}{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <img src="{{ user.avatar.url }}" alt="Avatar" class="img-thumbnail" width="150" height="150">
+            </div>
+            <div class="col-md-9">
+                <h2>{{ user.username }}'s Profile</h2>
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Full name:</strong> {{ user.first_name }} {{ user.last_name }}</li>
+                    <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                    <li class="list-group-item"><strong>Bio:</strong> {{ profile.bio }}</li>
+                    <li class="list-group-item"><strong>Birth date:</strong> {{ profile.birth_date }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}

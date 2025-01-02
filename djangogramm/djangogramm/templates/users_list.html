@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<h2 class="h2">Users list</h2>    
+{% endblock %}
+
+{% block content %}
+<div>
+    <ul class="list-group h2 p-2">
+        {% for user in users %}
+            <li class="list-group-item h2 p-2">{{ user.username }}</li>
+        {% empty %}
+            <li class="list-group-item-warning h2 p-2">No users found.</li>
+        {% endfor %}
+    </ul>
+</div>    
+{% endblock %}
