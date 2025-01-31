@@ -18,8 +18,7 @@
                         {% csrf_token %}
                         <button type="submit" class="btn btn-outline-info btn-sm me-4 mt-3 ">Log Out</button>
                     </form>
-{#                    <form action="{% url 'create_post' %}" method="post">#}
-                    <form action="{% url 'upload' %}" method="post">
+                    <form action="{% url 'create_post' %}">
                             {% csrf_token %}
                         <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 ">Create post</button>
                     </form>

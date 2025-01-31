@@ -57,7 +57,7 @@ class ReactionType(Enum):
 
 
 class Image(models.Model):
-    image = models.ImageField(upload_to='images/')
+    image = CloudinaryField('image')
     uploadede_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -68,7 +68,7 @@ class Post(models.Model):
     author = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     text = models.TextField()
-    published = models.BooleanField(default=False)
+    # published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     images = models.ManyToManyField(Image, related_name='posts')
@@ -97,8 +97,27 @@ class PostReaction(models.Model):
     def get_reaction_type(self):
         return self.reaction.label
 
+    class Meta:
+        unique_together = ('user', 'post')
+
     def __str__(self):
         return f"PostReaction: {self.get_reaction_type()} by {self.user.username} on {self.post.title}"
+
+# class ImageReaction(models.Model):
+#     user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+#     image = models.ForeignKey(Image, on_delete=models.CASCADE)
+#     reaction = EnumField(ReactionType, default=ReactionType.default())
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#
+#     class Meta:
+#         unique_together = ('user', 'image')
+#
+#     def get_reaction_type(self):
+#         return self.reaction.label
+#
+#     def __str__(self):
+#         return f"ImageReaction: {self.reaction.label} by {self.user.username}"
 
 
 class CommentReaction(models.Model):
@@ -107,6 +126,9 @@ class CommentReaction(models.Model):
     reaction = EnumField(ReactionType, default=ReactionType.default())
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'comment')
 
     def get_reaction_type(self):
         return self.reaction.label
@@ -123,3 +145,13 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+class Following(models.Model):
+    user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='followings')
+    following_user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='followers')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'following_user')
+    def __str__(self):
+        return f'{self.user.username} follows {self.following_user.username}'

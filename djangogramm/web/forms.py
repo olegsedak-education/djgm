@@ -4,38 +4,9 @@ from .models import AppUser, Post, Image
 from cloudinary.forms import CloudinaryFileField
 from django.forms import ModelForm
 from .models import Photo
-
-
-class PhotoForm(ModelForm):
-    image = CloudinaryFileField()
-
-    class Meta:
-        model = Photo
-        fields = ['image']
-
-
-
-class MultipleFileInput(forms.ClearableFileInput):
-    allow_multiple_selected = True
-
-
-class MultipleFileField(forms.FileField):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("widget", MultipleFileInput())
-        super().__init__(*args, **kwargs)
-
-    def clean(self, data, initial=None):
-        print('>>>', data, initial)
-        single_file_clean = super().clean
-        if isinstance(data, (list, tuple)):
-            result = [single_file_clean(d, initial) for d in data]
-        else:
-            result = single_file_clean(data, initial)
-        return result
-
-
-class FileFieldForm(forms.Form):
-    file_field = MultipleFileField()
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Div, Field, Submit
+from crispy_bootstrap5.bootstrap5 import FloatingField
 
 
 class LoginForm(forms.Form):
@@ -49,18 +20,26 @@ class RegisterForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 
-class PostCreationForm(forms.ModelForm):
+class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'text']
 
-
-class ImageOnPostCreationForm(forms.Form):
-    image = MultipleFileField()
-    class Meta:
-        model = Image
-        fields = ['image']
-        widgets = {
-            'image': MultipleFileInput(),
-        }
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Div(
+                Field('title', css_class='form-control', placeholder='Post title'),
+                css_class='form-floating mb-3 ms-3 pe-3'
+            ),
+            Div(
+                Field('text', css_class='form-control', rows=4, placeholder='Describe your post'),
+                css_class='form-floating mb-3 ms-3 pe-3'
+            ),
+            Div(
+                Submit('submit', 'Create Post', css_class='btn btn-primary'),
+                css_class='d-flex justify-content-center'
+            ),
+        )

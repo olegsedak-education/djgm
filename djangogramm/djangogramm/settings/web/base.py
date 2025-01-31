@@ -4,6 +4,7 @@ from dotenv import load_dotenv, find_dotenv
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+import cloudinary_storage
 
 load_dotenv(find_dotenv())
 
@@ -14,18 +15,6 @@ MAX_IMAGE_SIZE = int(os.environ.get('MAX_IMAGE_SIZE', 1600))
 THUMBNAIL_SIZE = int(os.environ.get('THUMBNAIL_SIZE', 200))
 IMAGE_QUALITY = int(os.environ.get('IMAGE_QUALITY', 85))
 
-CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
-CLOUDINARY_KEY_NAME = os.environ.get('CLOUDINARY_KEY_NAME')
-CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
-CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
-CLOUDINARY_URL=f'cloudinary://{CLOUDINARY_API_KEY}:{CLOUDINARY_API_SECRET}@{CLOUDINARY_CLOUD_NAME}'
-
-cloudinary.config(
-  	cloud_name = CLOUDINARY_CLOUD_NAME,
-  	api_key = CLOUDINARY_API_KEY,
-  	api_secret = CLOUDINARY_API_SECRET
-)
-
 TEMPLATE_DIR = BASE_DIR / os.environ.get("TEMPLATE_DIR", "templates")
 MEDIA_DIR = BASE_DIR /os.environ.get("MEDIA_DIR", "media")
 STATIC_DIR = BASE_DIR / os.environ.get("STATIC_DIR", "static")
@@ -35,6 +24,36 @@ IMAGE_DIR = MEDIA_DIR / os.environ.get("IMAGE_DIR", "images")
 DEFAULT_AVATAR_IMG_PATH = os.environ.get("DEFAULT_AVATAR_IMG_PATH", "media/default/unAuth.jpg")
 STATICFILES_DIRS = [STATIC_DIR]
 MEDIA_ROOT = MEDIA_DIR
+
+# CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
+CLOUDINARY_KEY_NAME = os.environ.get('CLOUDINARY_KEY_NAME')
+# CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
+# CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
+# CLOUDINARY_UPLOAD_PRESET = os.environ.get('CLOUDINARY_UPLOAD_PRESET')
+# CLOUDINARY_URL=f'cloudinary://{CLOUDINARY_API_KEY}:{CLOUDINARY_API_SECRET}@{CLOUDINARY_CLOUD_NAME}'
+
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+)
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+    'UPLOAD_PRESET': os.environ.get('CLOUDINARY_UPLOAD_PRESET'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+
+
+# cloudinary.config(
+#   	cloud_name = CLOUDINARY_CLOUD_NAME,
+#   	api_key = CLOUDINARY_API_KEY,
+#   	api_secret = CLOUDINARY_API_SECRET
+# )
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
@@ -51,15 +70,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    'cloudinary_storage',
+    'cloudinary',
     "django_extensions",
     "easy_thumbnails",
-    # "filer",
-
-    # "api",
-    # "core",
+    "crispy_forms",
+    "crispy_bootstrap5",
     "web",
 ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
@@ -116,10 +137,6 @@ THUMBNAIL_ALIASES = {
         'default': {'size': (1600, 1600), 'crop': True},
     },
 }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {

@@ -11,7 +11,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 mb-4 d-flex align-items-stretch">
                 <div class="card">
                     {% if post.images.all %}
-                        {% for image in post.images.all|slice:":1" %}  
+                        {% for image in post.images.all|slice:":1" %}
                             {% thumbnail image.image "thumbnail" as thumb %}
                             <img class="card-img-top lazyload" src="{{ thumb.url }}" alt="{{ post.title }}">
                         {% endfor %}
@@ -30,4 +30,12 @@
             <p>No posts available</p>
         {% endfor %}
     </div>
+
+
+{#<h1>{{ post.title }}</h1>#}
+{#<p>{{ post.text }}</p>#}
+{#{% for image in post.images.all %}#}
+{#    <img src="{{ image.image.url }}" alt="Image" style="max-width: 400px;">#}
+{#{% endfor %}#}
+
 {% endblock %}
