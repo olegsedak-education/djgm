@@ -4,9 +4,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.generic.edit import FormView
-from PIL import Image as PILImage
 from pathlib import Path
-from io import BytesIO
 import time
 from easy_thumbnails.files import get_thumbnailer
 from easy_thumbnails.signals import thumbnail_created

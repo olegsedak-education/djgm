@@ -1,3 +1,4 @@
+from crispy_forms.templatetags.crispy_forms_field import css_class
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import AppUser, Post, Image
