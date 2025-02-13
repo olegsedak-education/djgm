@@ -6,8 +6,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.generic.edit import FormView
 from pathlib import Path
 import time
-from easy_thumbnails.files import get_thumbnailer
-from easy_thumbnails.signals import thumbnail_created
+# from easy_thumbnails.files import get_thumbnailer
+# from easy_thumbnails.signals import thumbnail_created
 from .models import Post, AppUser, UserProfile, Image, PostReaction, ReactionType, Following
 from .forms import RegisterForm, LoginForm ,PostForm
 from djangogramm.settings.web.base import MAX_IMAGE_SIZE , IMAGE_QUALITY, MEDIA_ROOT, CLOUDINARY_STORAGE
@@ -172,11 +172,5 @@ def undislike_post(request, post_id):
     return redirect('post_detail', post_id=post_id)
 
 
-
-
-
-
-
-
-
-
+def about(request):
+    return render(request, 'about.html')

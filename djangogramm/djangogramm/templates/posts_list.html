@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
-{% load thumbnail %}
 {% load static %}
 
 {% block title %}Posts list page{% endblock %}
+{% block navbar %}
+    {% include 'includes/navbar_home.html' %}
+{% endblock %}
 
 {% block content %}
     <h2 class="h3 p-2">Latest posts</h2>
@@ -12,8 +14,8 @@
                 <div class="card">
                     {% if post.images.all %}
                         {% for image in post.images.all|slice:":1" %}
-                            {% thumbnail image.image "thumbnail" as thumb %}
-                            <img class="card-img-top lazyload" src="{{ thumb.url }}" alt="{{ post.title }}">
+                            <img class="card-img-top lazyload" src="{{ image.image.url }}" alt="{{ post.title }}">
+
                         {% endfor %}
                     {% else %}
                         <img class="card-img-top" src="{% static 'images/default/placeholder-no-image.webp' %}" alt="No image available">
@@ -30,12 +32,5 @@
             <p>No posts available</p>
         {% endfor %}
     </div>
-
-
-{#<h1>{{ post.title }}</h1>#}
-{#<p>{{ post.text }}</p>#}
-{#{% for image in post.images.all %}#}
-{#    <img src="{{ image.image.url }}" alt="Image" style="max-width: 400px;">#}
-{#{% endfor %}#}
 
 {% endblock %}

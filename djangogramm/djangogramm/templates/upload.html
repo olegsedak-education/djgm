@@ -1,0 +1,10 @@
+{% load static %}
+
+<script src="{% static 'js/upload-widget.js' %}"></script>
+
+<button id="upload_widget">Upload Image</button>
+
+<script>
+    const cloudName = "{{ cloud_name }}";
+    initCloudinaryUploadWidget(cloudName);
+</script>

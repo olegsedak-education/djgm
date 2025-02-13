@@ -49,12 +49,6 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 # STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
 
-# cloudinary.config(
-#   	cloud_name = CLOUDINARY_CLOUD_NAME,
-#   	api_key = CLOUDINARY_API_KEY,
-#   	api_secret = CLOUDINARY_API_SECRET
-# )
-
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 DEBUG = True
@@ -73,7 +67,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     "django_extensions",
-    "easy_thumbnails",
+    # "easy_thumbnails",
     "crispy_forms",
     "crispy_bootstrap5",
     "web",
@@ -130,13 +124,13 @@ DATABASES = {
     }
 }
 
-THUMBNAIL_ALIASES = {
-    '': {
-        'avatar': {'size': (50, 50), 'crop': True},
-        'thumbnail': {'size': (200, 200), 'crop': True},
-        'default': {'size': (1600, 1600), 'crop': True},
-    },
-}
+# THUMBNAIL_ALIASES = {
+#     '': {
+#         'avatar': {'size': (50, 50), 'crop': True},
+#         'thumbnail': {'size': (200, 200), 'crop': True},
+#         'default': {'size': (1600, 1600), 'crop': True},
+#     },
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
