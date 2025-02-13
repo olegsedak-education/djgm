@@ -109,23 +109,29 @@ def create_post(request):
     })
 
 @login_required
-def follow_user(request, user_id):
-    user_to_follow = get_object_or_404(AppUser, id=user_id)
-    if not request.user == user_to_follow:
-        Following.objects.filter(
+def follow_user(request, username):
+    user_to_follow = get_object_or_404(AppUser, userbame=username)
+    if request.user == user_to_follow:
+        messages.error(request, "You can't follow yourself!")
+        return redirect('user_profile', username=username)
+
+    Following.objects.get_or_create(
             user=request.user,
-            following=user_to_follow
+            following_user=user_to_follow
         )
-    return redirect('user_profile', user_id=user_to_follow.id)
+    return redirect('user_profile', username=username)
 
 @login_required
-def unfollow_user(request, user_id):
-    user_to_unfollow = get_object_or_404(AppUser, id=user_id)
+def unfollow_user(request, username):
+    user_to_unfollow = get_object_or_404(AppUser, username=username)
+    if request.user == user_to_unfollow:
+        messages.error(request, "You cannot unfollow yourself.")
+        return redirect('user_profile', username=username)
     Following.objects.filter(
         user=request.user,
-        following=user_to_unfollow
+        following_user=user_to_unfollow
     ).delete()
-    return redirect('user_profile', user_id=user_to_unfollow.id)
+    return redirect('user_profile', username=username)
 
 
 @login_required
