@@ -174,3 +174,8 @@ def undislike_post(request, post_id):
 
 def about(request):
     return render(request, 'about.html')
+
+
+def complete_registration(request):
+    pass
+

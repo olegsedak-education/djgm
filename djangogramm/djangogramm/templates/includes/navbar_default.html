@@ -1,7 +1,7 @@
 {% load static %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container">
-{#    <a class="navbar-brand" href="{% url 'home' %}">DjangoGramm</a>#}
+{#    <a class="navbar-brand" href="{% url 'web:home' %}">DjangoGramm</a>#}
     <a class="navbar-brand mb-1 m-1 h1 text-center">
         <img src="{% static 'images/Djangogramm.svg' %}"
              width="30" height="30" class="d-inline-block align-top" alt="">Djangogramm</a>
@@ -14,29 +14,29 @@
       <ul class="navbar-nav ms-auto">
         {% if request.user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'home' %}">Home</a>
+            <a class="nav-link" href="{% url 'web:home' %}">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'posts_list' %}">Posts List</a>
+            <a class="nav-link" href="{% url 'web:posts:list' %}">Posts List</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'about' %}">About</a>
+            <a class="nav-link" href="{% url 'web:about' %}">About</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            <a class="nav-link" href="{% url 'web:auth:logout' %}">Logout</a>
           </li>
         {% else %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'home' %}">Home</a>
+            <a class="nav-link" href="{% url 'web:home' %}">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">Login</a>
+            <a class="nav-link" href="{% url 'web:auth:login' %}">Login</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'register' %}">Register</a>
+            <a class="nav-link" href="{% url 'web:auth:register' %}">Register</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'about' %}">About</a>
+            <a class="nav-link" href="{% url 'web:about' %}">About</a>
           </li>
         {% endif %}
       </ul>

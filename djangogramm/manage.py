@@ -8,7 +8,11 @@ from dotenv import load_dotenv, find_dotenv
 def main():
     """Run administrative tasks."""
     load_dotenv(find_dotenv())
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djangogramm.settings.web.prod")
+    # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djangogramm.settings.web.prod")
+    os.environ.setdefault(
+        "DJANGO_SETTINGS_MODULE", os.getenv("DJANGO_SETTINGS_MODULE", "djangogramm.settings.web.prod")
+    )
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

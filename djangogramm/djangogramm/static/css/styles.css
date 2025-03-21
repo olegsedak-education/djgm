@@ -1,0 +1,17 @@
+@font-face {
+  font-family: 'Cleanvertising-Black';
+  src: url("/static/fonts/CLEANVEB.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: 'Phenomena-Bold';
+  src: url("/static/fonts/Phenomena-Bold.otf") format("opentype");
+}
+
+.djangotext {
+  font-family: 'Cleanvertising-Black', sans-serif;
+}
+
+.gramtext {
+  font-family: 'Phenomena-Bold', sans-serif;
+}

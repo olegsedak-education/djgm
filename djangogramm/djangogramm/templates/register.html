@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-    <form class="form-group p-2" action={% url 'register' %} method="POST">
+    <form class="form-group p-2" action={% url 'web:auth:register' %} method="POST">
     	{% csrf_token %}
     	<h4 class="p-3">Wellcome to Sign Up  page </h4>
 
@@ -21,6 +21,6 @@
                 {% endif %}
 	    {% endfor %}
     <button type="submit" class="btn btn-primary mt-3">Register</button>
-    <p>Already has an account? <a href="{%url 'login' %}">Login</a></p>
+    <p>Already has an account? <a href="{%url 'web:auth:login' %}">Login</a></p>
     </form>
 {% endblock %}

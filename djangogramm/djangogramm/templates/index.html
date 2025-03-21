@@ -17,21 +17,21 @@
 {#        <ul class="nav justify-content-end">#}
 {#            {% if user.is_authenticated %}#}
 {#                <li class="nav-item d-flex align-items-end" >#}
-{#                    <form action="{% url 'logout' %}" method="post">#}
+{#                    <form action="{% url 'web:auth:logout' %}" method="post">#}
 {#                        {% csrf_token %}#}
 {#                        <button type="submit" class="btn btn-outline-info btn-sm me-4 mt-3 ">Log Out</button>#}
 {#                    </form>#}
-{#                    <form action="{% url 'create_post' %}">#}
+{#                    <form action="{% url 'web:posts:create' %}">#}
 {#                            {% csrf_token %}#}
 {#                        <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 ">Create post</button>#}
 {#                    </form>#}
 {#                </li>#}
 {#            {% else %}#}
 {#                <li class="nav-item">#}
-{#                    <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'login' %}>Login</a>#}
+{#                    <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'web:auth:login' %}>Login</a>#}
 {#                </li>#}
 {#                <li class="nav-item">#}
-{#                    <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'register' %}>Register</a>#}
+{#                    <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'web:auth:register' %}>Register</a>#}
 {#                </li>#}
 {#            {% endif %}#}
 {#        </ul>#}

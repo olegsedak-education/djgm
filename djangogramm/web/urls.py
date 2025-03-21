@@ -15,14 +15,14 @@ auth_patterns = [
 ]
 
 user_patterns = [
-    path("", views.users_list, name="user_list"),
-    path("<int:pk>/", views.user_profile, name="user_detail"),
+    path("", views.users_list, name="list"),
+    path("<int:pk>/", views.user_profile, name="detail"),
     path("<int:pk>/follow/", views.follow_user, name="follow"),
     path("<int:pk>/unfollow/", views.unfollow_user, name="unfollow"),
 ]
 
 post_patterns = [
-    path("", views.posts_list, name="post_list"),
+    path("", views.posts_list, name="list"),
     path("create/", views.create_post, name="create"),
     path("<int:pk>/", views.post_detail, name="detail"),
     path("<int:pk>/like/", views.like_post, name="like"),
