@@ -8,35 +8,35 @@
 {% block extra_head %}
 
 
-        {% include 'includes/navbar_home.html' %}
+{% include 'includes/navbar_home.html' %}
 
-{#    <nav class="navbar navbar-light bg-light">#}
-{#        <a class="navbar-brand mb-1 m-1 h1 text-center">#}
-{#            <img src="{% static 'images/Djangogramm.svg' %}" #}
-{#                 width="30" height="30" class="d-inline-block align-top" alt="">Djangogramm</a>#}
-{#        <ul class="nav justify-content-end">#}
-{#            {% if user.is_authenticated %}#}
-{#                <li class="nav-item d-flex align-items-end" >#}
-{#                    <form action="{% url 'web:auth:logout' %}" method="post">#}
-{#                        {% csrf_token %}#}
-{#                        <button type="submit" class="btn btn-outline-info btn-sm me-4 mt-3 ">Log Out</button>#}
-{#                    </form>#}
-{#                    <form action="{% url 'web:posts:create' %}">#}
-{#                            {% csrf_token %}#}
-{#                        <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 ">Create post</button>#}
-{#                    </form>#}
-{#                </li>#}
-{#            {% else %}#}
-{#                <li class="nav-item">#}
-{#                    <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'web:auth:login' %}>Login</a>#}
-{#                </li>#}
-{#                <li class="nav-item">#}
-{#                    <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'web:auth:register' %}>Register</a>#}
-{#                </li>#}
-{#            {% endif %}#}
-{#        </ul>#}
-{#    </nav>#}
-{#    #}
+
+{#    {% if user.is_authenticated %}#}
+{#        <li class="nav-item d-flex align-items-end" >#}
+{#            <form action="{% url 'web:auth:logout' %}" method="post">#}
+{#                {% csrf_token %}#}
+{#                <button type="submit" class="btn btn-outline-info btn-sm me-4 mt-3 ">Log Out</button>#}
+{#            </form>#}
+{#            <form action="{% url 'web:posts:create' %}">#}
+{#                    {% csrf_token %}#}
+{#                <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 ">Create post</button>#}
+{#            </form>#}
+{#        </li>#}
+{#    {% else %}#}
+{#        <li class="nav-item">#}
+{#            <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'web:auth:login' %}>Login</a>#}
+{#        </li>#}
+{#        <li class="nav-item">#}
+{#            <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'web:auth:register' %}>Register</a>#}
+{#        </li>#}
+{#    {% endif %}#}
+{##}
+{##}
+{##}
+{##}
+{##}
+
+
 {% endblock %}
 
 {% block body %}

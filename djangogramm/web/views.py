@@ -30,7 +30,7 @@ def sign_up(request):
             user.save()
             messages.success(request, "You have signed up succesfully.")
             login(request, user)
-            return redirect("home")
+            return redirect('web:home')
     return render(request, 'register.html', { "form": form })
 
 
@@ -44,7 +44,7 @@ def sign_in(request):
             if user:
                 login(request, user)
                 messages.success(request, f"Hi {username.title()}, welcome back.")
-                return redirect("home")
+                return redirect('web:home')
         messages.error(request, f"Invalid username or password")
     else:
         form = LoginForm()
@@ -60,14 +60,14 @@ def feed(request):
     return render(request, "feed.html")
 
 
-def user_profile(request, user_id=None):
-    user = get_object_or_404(AppUser, id=user_id)
+def user_profile(request, pk=None):
+    user = get_object_or_404(AppUser, id=pk)
     profile = get_object_or_404(UserProfile, user=user)
     return render(request, "user_profile.html", {'user': user, 'profile': profile})
 
 
-def post_detail(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+def post_detail(request, pk):
+    post = get_object_or_404(Post, id=pk)
     return render(request, "post_detail.html", {'post': post})
 
 
@@ -93,7 +93,7 @@ def create_post(request):
                     image = Image.objects.create(image=url.strip())
                     post.images.add(image)
             post.save()
-            return redirect('post_detail', post_id=post.id)
+            return redirect('web:posts:detail', pk=post.id)
         else:
             print("Ошибки формы:", post_form.errors)
 
@@ -113,63 +113,63 @@ def follow_user(request, username):
     user_to_follow = get_object_or_404(AppUser, userbame=username)
     if request.user == user_to_follow:
         messages.error(request, "You can't follow yourself!")
-        return redirect('user_profile', username=username)
+        return redirect('users:detail', username=username)
 
     Following.objects.get_or_create(
             user=request.user,
             following_user=user_to_follow
         )
-    return redirect('user_profile', username=username)
+    return redirect('users:detail', username=username)
 
 @login_required
 def unfollow_user(request, username):
     user_to_unfollow = get_object_or_404(AppUser, username=username)
     if request.user == user_to_unfollow:
         messages.error(request, "You cannot unfollow yourself.")
-        return redirect('user_profile', username=username)
+        return redirect('users:detail', username=username)
     Following.objects.filter(
         user=request.user,
         following_user=user_to_unfollow
     ).delete()
-    return redirect('user_profile', username=username)
+    return redirect('users:detail', username=username)
 
 
 @login_required
-def post_reaction_handler(request, post_id, reaction_type):
-    post = get_object_or_404(Post, id=post_id)
+def post_reaction_handler(request, pk, reaction_type):
+    post = get_object_or_404(Post, id=pk)
     reaction, _ = PostReaction.objects.update_or_create(
         user=request.user,
         post=post,
         defaults={'reaction': reaction_type}
     )
-    return redirect('post_detail', post_id=post.id)
+    return redirect('posts:detail', pk=post.id)
 
 
 @login_required
-def like_post(request, post_id):
+def like_post(request, pk):
     return post_reaction_handler(request, post_id, ReactionType.LIKE)
 
 
 @login_required
 def dislike_post(request, post_id):
-    return post_reaction_handler(request, post_id, ReactionType.DISLIKE)
+    return post_reaction_handler(request, pk, ReactionType.DISLIKE)
 
 @login_required
-def unlike_post(request, post_id):
+def unlike_post(request, pk):
     PostReaction.objects.filter(
         user=request.user,
-        post__id=post_id,
+        post__id=pk,
     ).delete()
-    return redirect('post_detail', post_id=post_id)
+    return redirect('posts:detail', pk=pk)
 
 @login_required
-def undislike_post(request, post_id):
+def undislike_post(request, pk):
     PostReaction.objects.filter(
         user=request.user,
-        post__id=post_id,
+        post__id=pk,
         reaction=ReactionType.DISLIKE
     ).delete()
-    return redirect('post_detail', post_id=post_id)
+    return redirect('posts:detail', pk=pk)
 
 
 def about(request):
