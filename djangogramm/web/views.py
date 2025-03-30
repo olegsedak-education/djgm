@@ -178,4 +178,3 @@ def about(request):
 
 def complete_registration(request):
     pass
-
