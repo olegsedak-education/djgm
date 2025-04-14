@@ -1,33 +1,5 @@
 {% load static %}
 
-{#<nav class="navbar bg-light shadow">#}
-{#  <div class="container">#}
-{#    <a class="navbar-brand fs-4 fw-bold" href="{% url 'web:home' %}">#}
-{#      <img src="{% static 'images/Djangogramm.svg' %}" width="30" height="30" class="d-inline-block align-top" alt="">#}
-{#      <span class="djangotext">Django</span><span class="gramtext">gramm</span>#}
-{#    </a>#}
-{##}
-{##}
-{#    <ul class="nav ms-auto">#}
-{#      <li class="nav-item">#}
-{#        <a class="nav-link text-dark" href="{% url 'web:home' %}">Home</a>#}
-{#      </li>#}
-{#      <li class="nav-item">#}
-{#        <a class="nav-link text-dark" href="{% url 'web:auth:login' %}">Login</a>#}
-{#      </li>#}
-{#      <li class="nav-item">#}
-{#        <a class="nav-link text-dark" href="{% url 'web:auth:register' %}">Register</a>#}
-{#      </li>#}
-{#      <li class="nav-item">#}
-{#        <a class="nav-link text-secondary" href="{% url 'web:about' %}">About</a>#}
-{#      </li>#}
-{#    </ul>#}
-{#  </div>#}
-{#</nav>#}
-
-
-{% load static %}
-
 <nav class="navbar bg-light shadow">
   <div class="container">
     <a class="navbar-brand fs-4 fw-bold" href="{% url 'web:home' %}">
@@ -39,20 +11,27 @@
       <li class="nav-item">
         <a class="nav-link text-dark" href="{% url 'web:home' %}">Home</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link text-secondary" href="{% url 'web:about' %}">About</a>
-      </li>
 
       {% if user.is_authenticated %}
-        <li class="nav-item d-flex align-items-end">
-          <form action="{% url 'web:auth:logout' %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-info btn-sm me-4 mt-3 ">Log Out</button>
-          </form>
-          <form action="{% url 'web:posts:create' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 ">Create Post</button>
-          </form>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="{% if user.profile.avatar_url %}
+                        {{ user.profile.avatar_url }}
+                        {% else %}{% static 'images/default/default_avatar.webp' %}
+                        {% endif %}" class="rounded-circle" width="30" height="30">
+            <span class="ms-2">{{ user.username }}</span>
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="{% url 'web:users:detail' pk=user.pk %}">Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'web:users:edit_profile' pk=user.pk %}">Edit Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form action="{% url 'web:auth:logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item">Log Out</button>
+              </form>
+            </li>
+          </ul>
         </li>
       {% else %}
         <li class="nav-item">

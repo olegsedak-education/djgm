@@ -1,3 +1,11 @@
+from django.core.mail import send_mail
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.urls import reverse
+from django.template.loader import render_to_string
+from django.contrib.auth.tokens import default_token_generator
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth import login, authenticate
@@ -6,17 +14,14 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.generic.edit import FormView
 from pathlib import Path
 import time
-# from easy_thumbnails.files import get_thumbnailer
-# from easy_thumbnails.signals import thumbnail_created
 from .models import Post, AppUser, UserProfile, Image, PostReaction, ReactionType, Following
-from .forms import RegisterForm, LoginForm ,PostForm
+from .forms import RegisterForm, LoginForm, PostForm, UserProfileForm
 from djangogramm.settings.web.base import MAX_IMAGE_SIZE , IMAGE_QUALITY, MEDIA_ROOT, CLOUDINARY_STORAGE
 from django.core.files.base import ContentFile
 import os
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
-
 
 
 def sign_up(request):
@@ -27,9 +32,15 @@ def sign_up(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
+            user.is_active = False
+
             user.save()
+
+            send_confirmation_email(request, user)
+
             messages.success(request, "You have signed up succesfully.")
-            login(request, user)
+            # login(request, user)
+
             return redirect('web:home')
     return render(request, 'register.html', { "form": form })
 
@@ -59,9 +70,9 @@ def posts_list(request):
 def feed(request):
     return render(request, "feed.html")
 
-
-def user_profile(request, pk=None):
-    user = get_object_or_404(AppUser, id=pk)
+@login_required
+def user_profile(request, pk):
+    user = get_object_or_404(AppUser, pk=pk)
     profile = get_object_or_404(UserProfile, user=user)
     return render(request, "user_profile.html", {'user': user, 'profile': profile})
 
@@ -110,7 +121,7 @@ def create_post(request):
 
 @login_required
 def follow_user(request, username):
-    user_to_follow = get_object_or_404(AppUser, userbame=username)
+    user_to_follow = get_object_or_404(AppUser, username=username)
     if request.user == user_to_follow:
         messages.error(request, "You can't follow yourself!")
         return redirect('users:detail', username=username)
@@ -137,21 +148,26 @@ def unfollow_user(request, username):
 @login_required
 def post_reaction_handler(request, pk, reaction_type):
     post = get_object_or_404(Post, id=pk)
-    reaction, _ = PostReaction.objects.update_or_create(
+    reaction, created = PostReaction.objects.update_or_create(
         user=request.user,
         post=post,
         defaults={'reaction': reaction_type}
     )
+    if not created and reaction.reaction == reaction_type:
+        reaction.delete()
+    else:
+        reaction.reaction = reaction_type
+        reaction.save()
     return redirect('posts:detail', pk=post.id)
 
 
 @login_required
 def like_post(request, pk):
-    return post_reaction_handler(request, post_id, ReactionType.LIKE)
+    return post_reaction_handler(request, pk, ReactionType.LIKE)
 
 
 @login_required
-def dislike_post(request, post_id):
+def dislike_post(request, pk):
     return post_reaction_handler(request, pk, ReactionType.DISLIKE)
 
 @login_required
@@ -176,5 +192,67 @@ def about(request):
     return render(request, 'about.html')
 
 
-def complete_registration(request):
-    pass
+def send_confirmation_email(request, user):
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(str(user.pk)))
+    domain = get_current_site(request).domain
+    activation_link = f"https://{domain}{reverse('web:auth:complete_registration', 
+                                                 kwargs={'uid64': uid, 'token': token})}"
+
+    subject = "Confirm your email"
+    message = render_to_string('email_confirmation.html',
+                               {'user': user, 'activation_link': activation_link})
+    send_mail(subject, message, 'noreply@yourdomain.com', [user.email])
+
+
+def complete_registration(request, uid64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uid64))
+        user = AppUser.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.is_email_confirmed = True
+        user.save()
+        login(request, user)
+        messages.success(request, "Email confirmed. You can now complete your profile.")
+        return redirect('web:users:detail', pk=user.pk)
+    else:
+        messages.error(request, "Confirmation link is invalid or expired.")
+        return redirect('web:home')
+
+
+@login_required
+def edit_profile(request):
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=user_profile, user=request.user)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            request.user.first_name = form.cleaned_data['first_name']
+            request.user.last_name = form.cleaned_data['last_name']
+            request.user.save()
+            profile.save()
+            messages.success(request, "Profile updated.")
+            return redirect('web:users:detail', pk=request.user.pk)
+    else:
+        form = UserProfileForm(instance=user_profile, user=request.user)
+
+    return render(request, 'edit_profile.html', {'form': form})
+
+
+
+
+
+
+
+
+
+
+
+
+
+

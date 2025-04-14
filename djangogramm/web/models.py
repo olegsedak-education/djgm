@@ -7,11 +7,8 @@ from django.conf import settings
 from cloudinary.models import CloudinaryField
 
 
-class Photo(models.Model):
-    image = CloudinaryField('image')
-
-
 class AppUser(AbstractUser):
+    is_email_confirmed = models.BooleanField(default=False)
     avatar = models.ImageField(upload_to=settings.IMAGE_DIR, default=settings.DEFAULT_AVATAR_IMG_PATH)
     groups = models.ManyToManyField(
         'auth.Group',
@@ -36,6 +33,13 @@ class UserProfile(models.Model):
     user = models.OneToOneField(AppUser, on_delete=models.CASCADE, db_index=True)
     birth_date = models.DateField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
+    avatar = CloudinaryField('avatar', null=True, blank=True)
+
+    @property
+    def avatar_url(self):
+        if self.avatar:
+            return self.avatar.url
+        return settings.DEFAULT_AVATAR_IMG_PATH
 
     def __str__(self):
         return f"{self.user.username} profile"
@@ -68,10 +72,15 @@ class Post(models.Model):
     author = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     text = models.TextField()
-    # published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     images = models.ManyToManyField(Image, related_name='posts')
+
+    def likes_count(self):
+        return self.postreaction_set.filter(reaction=ReactionType.LIKE).count()
+
+    def dislikes_count(self):
+        return self.postreaction_set.filter(reaction=ReactionType.DISLIKE).count()
 
     def __str__(self):
         return f'{self.title}, {self.author}, {self.text}, {self.created_at}, {self.updated_at}'

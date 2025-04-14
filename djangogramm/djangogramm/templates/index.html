@@ -6,46 +6,22 @@
 {% endblock %}
 
 {% block extra_head %}
-
-
 {% include 'includes/navbar_home.html' %}
-
-
-{#    {% if user.is_authenticated %}#}
-{#        <li class="nav-item d-flex align-items-end" >#}
-{#            <form action="{% url 'web:auth:logout' %}" method="post">#}
-{#                {% csrf_token %}#}
-{#                <button type="submit" class="btn btn-outline-info btn-sm me-4 mt-3 ">Log Out</button>#}
-{#            </form>#}
-{#            <form action="{% url 'web:posts:create' %}">#}
-{#                    {% csrf_token %}#}
-{#                <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 ">Create post</button>#}
-{#            </form>#}
-{#        </li>#}
-{#    {% else %}#}
-{#        <li class="nav-item">#}
-{#            <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'web:auth:login' %}>Login</a>#}
-{#        </li>#}
-{#        <li class="nav-item">#}
-{#            <a class="nav-item ms btn btn-outline-success btn-sm me-4" href={% url 'web:auth:register' %}>Register</a>#}
-{#        </li>#}
-{#    {% endif %}#}
-{##}
-{##}
-{##}
-{##}
-{##}
-
-
 {% endblock %}
 
 {% block body %}
     
     {% block content %}
         {% if user.is_authenticated %}
-           <div class="alert alert-info" role="alert"> Hi, {{ user.username }}!</div>
+            <div class="alert alert-info fs-6 text-center font-monospace" role="alert"> Hi, {{ user.username }}!</div>
+            <div class="container text-center">
+                <form action="{% url 'web:posts:create' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 mb-4">Create Post</button>
+                </form>
+            </div>
         {% else %}
-        <div class="alert alert-secondary" role="alert">You are not logged in</div>
+            <div class="alert alert-secondary text-center" role="alert">You are not logged in</div>
         {% endif %}
     {% endblock %}    
     <h3 class="h3 text-center">Wellcome to Djangogramm</h3>

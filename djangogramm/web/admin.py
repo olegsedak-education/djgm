@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import AppUser, Photo
+from .models import AppUser, Image
 
 class AppUserAdmin(UserAdmin):
     pass
 
 admin.site.register(AppUser, AppUserAdmin)
 
-admin.site.register(Photo)
+admin.site.register(Image)

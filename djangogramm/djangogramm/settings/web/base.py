@@ -21,16 +21,11 @@ STATIC_DIR = BASE_DIR / os.environ.get("STATIC_DIR", "static")
 STATIC_URL= os.environ.get("STATIC_URL","/static/")
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 IMAGE_DIR = MEDIA_DIR / os.environ.get("IMAGE_DIR", "images")
-DEFAULT_AVATAR_IMG_PATH = os.environ.get("DEFAULT_AVATAR_IMG_PATH", "media/default/unAuth.jpg")
+DEFAULT_AVATAR_IMG_PATH = os.environ.get("DEFAULT_AVATAR_IMG_PATH", "media/default/default_avatar.webp")
 STATICFILES_DIRS = [STATIC_DIR]
 MEDIA_ROOT = MEDIA_DIR
 
-# CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
 CLOUDINARY_KEY_NAME = os.environ.get('CLOUDINARY_KEY_NAME')
-# CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
-# CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
-# CLOUDINARY_UPLOAD_PRESET = os.environ.get('CLOUDINARY_UPLOAD_PRESET')
-# CLOUDINARY_URL=f'cloudinary://{CLOUDINARY_API_KEY}:{CLOUDINARY_API_SECRET}@{CLOUDINARY_CLOUD_NAME}'
 
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),

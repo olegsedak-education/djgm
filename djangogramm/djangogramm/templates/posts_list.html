@@ -14,8 +14,9 @@
                 <div class="card">
                     {% if post.images.all %}
                         {% for image in post.images.all|slice:":1" %}
-                            <img class="card-img-top lazyload" src="{{ image.image.url }}" alt="{{ post.title }}">
-
+                            <a href="{% url 'web:posts:detail' post.id %}">
+                                <img class="card-img-top lazyload" src="{{ image.image.url }}"  alt="{{ post.title }}">
+                            </a>
                         {% endfor %}
                     {% else %}
                         <img class="card-img-top" src="{% static 'images/default/placeholder-no-image.webp' %}" alt="No image available">
@@ -23,8 +24,8 @@
                     {% endif %}
                     <div class="card-body">
                         <h3 class="card-title">{{ post.title }}</h3>
-                        <p class="card-text">{{ post.text }}</p>
-                        <a class="btn btn-primary mt-3" href="{% url 'post_detail' post.id %}">Read more</a>
+                        <p class="card-text fw-light fs-6">{{ post.text }}</p>
+                        <a class="btn btn-secondary btn-sm mt-3" href="{% url 'web:posts:detail' post.id %}">See more</a>
                     </div>
                 </div>
             </div>

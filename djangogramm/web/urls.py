@@ -9,7 +9,7 @@ app_name = 'web'
 
 auth_patterns = [
     path("register/", views.sign_up, name="register"),
-    path("register/complete/<uuid:token>/", views.complete_registration, name="registration_complete"),
+    path("register/complete/<uid64>/<str:token>/", views.complete_registration, name="complete_registration"),
     path("login/", views.sign_in, name="login"),
     path("logout/", LogoutView.as_view(next_page=settings.LOGOUT_REDIRECT_URL), name="logout"),
 ]
@@ -19,6 +19,7 @@ user_patterns = [
     path("<int:pk>/", views.user_profile, name="detail"),
     path("<int:pk>/follow/", views.follow_user, name="follow"),
     path("<int:pk>/unfollow/", views.unfollow_user, name="unfollow"),
+    path("<int:pk>/edit/", views.edit_profile, name="edit_profile"),
 ]
 
 post_patterns = [

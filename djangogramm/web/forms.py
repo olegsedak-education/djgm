@@ -1,10 +1,9 @@
 from crispy_forms.templatetags.crispy_forms_field import css_class
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import AppUser, Post, Image
+from .models import AppUser, UserProfile, Image, Post
 from cloudinary.forms import CloudinaryFileField
 from django.forms import ModelForm
-from .models import Photo
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Field, Submit
 from crispy_bootstrap5.bootstrap5 import FloatingField
@@ -44,3 +43,57 @@ class PostForm(forms.ModelForm):
                 css_class='d-flex justify-content-center'
             ),
         )
+
+
+class UserProfileForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=30, required=False)
+    last_name = forms.CharField(max_length=30, required=False)
+    avatar = CloudinaryFileField()
+
+    class Meta:
+        model = UserProfile
+        fields = ['first_name', 'last_name', 'birth_date', 'bio', 'avatar']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.fields['first_name'].initial = user.first_name
+            self.fields['last_name'].initial = user.last_name
+            self.fields['avatar'].initial = user.avatar
+
+    def save(self, commit=True, user=None):
+        profile = super().save(commit=False)
+
+        if user:
+            user.first_name = self.cleaned_data.get('first_name', '')
+            user.last_name = self.cleaned_data.get('last_name', '')
+            user.save()
+
+            avatar = self.cleaned_data.get('avatar')
+
+            if avatar:
+                user.avatar = avatar
+                user.save()
+
+        if commit:
+            profile.save()
+
+        return profile
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
