@@ -36,11 +36,11 @@ def sign_up(request):
 
             user.save()
 
+            UserProfile.objects.create(user=user)
+
             send_confirmation_email(request, user)
 
-            messages.success(request, "You have signed up succesfully.")
-            # login(request, user)
-
+            messages.success(request, "You have signed up successfully.")
             return redirect('web:home')
     return render(request, 'register.html', { "form": form })
 
@@ -73,7 +73,7 @@ def feed(request):
 @login_required
 def user_profile(request, pk):
     user = get_object_or_404(AppUser, pk=pk)
-    profile = get_object_or_404(UserProfile, user=user)
+    profile, created = UserProfile.objects.get_or_create(user=user)
     return render(request, "user_profile.html", {'user': user, 'profile': profile})
 
 
@@ -198,6 +198,8 @@ def send_confirmation_email(request, user):
     domain = get_current_site(request).domain
     activation_link = f"https://{domain}{reverse('web:auth:complete_registration', 
                                                  kwargs={'uid64': uid, 'token': token})}"
+    #activation_link = f"http://{domain}{reverse('web:auth:complete_registration',
+     #                                             kwargs={'uid64': uid, 'token': token})}"
 
     subject = "Confirm your email"
     message = render_to_string('email_confirmation.html',
@@ -209,23 +211,36 @@ def complete_registration(request, uid64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uid64))
         user = AppUser.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, AppUser.DoesNotExist):
-        user = None
 
-    if user and default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.is_email_confirmed = True
-        user.save()
-        login(request, user)
-        messages.success(request, "Email confirmed. You can now complete your profile.")
-        return redirect('web:users:detail', pk=user.pk)
-    else:
-        messages.error(request, "Confirmation link is invalid or expired.")
-        return redirect('web:home')
+        if user.is_active and user.is_email_confirmed:
+            messages.info(request, "Email was already confirmed. You can login to your account.")
+            return redirect('web:auth:login')
+
+        if default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.is_email_confirmed = True
+            user.save()
+            login(request, user)
+            messages.success(request, "Email confirmed successfully. Please complete your profile.")
+            return redirect('web:users:edit_profile')
+        else:
+            messages.error(request, "The confirmation link has expired. Please request a new one.")
+            return redirect('web:auth:register')
+
+    except (TypeError, ValueError, OverflowError):
+        messages.error(request, "Invalid confirmation link format.")
+        return redirect('web:auth:register')
+    except AppUser.DoesNotExist:
+        messages.error(request, "User account not found. Please register again.")
+        return redirect('web:auth:register')
 
 
 @login_required
-def edit_profile(request):
+def edit_profile(request, pk):
+    if int(pk) != request.user.pk:
+        messages.error(request, "You can only edit your own profile.")
+        return redirect('web:users:detail', pk=request.user.pk)
+
     user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
@@ -236,12 +251,12 @@ def edit_profile(request):
             request.user.last_name = form.cleaned_data['last_name']
             request.user.save()
             profile.save()
-            messages.success(request, "Profile updated.")
+            messages.success(request, "Profile updated successfully.")
             return redirect('web:users:detail', pk=request.user.pk)
     else:
         form = UserProfileForm(instance=user_profile, user=request.user)
 
-    return render(request, 'edit_profile.html', {'form': form})
+    return render(request, 'user_profile_edit.html', {'form': form, 'profile': user_profile})
 
 
 
