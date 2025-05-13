@@ -1,10 +1,8 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv, find_dotenv
-import cloudinary
-import cloudinary.uploader
+
 import cloudinary.api
-import cloudinary_storage
+from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 
@@ -16,9 +14,9 @@ THUMBNAIL_SIZE = int(os.environ.get('THUMBNAIL_SIZE', 200))
 IMAGE_QUALITY = int(os.environ.get('IMAGE_QUALITY', 85))
 
 TEMPLATE_DIR = BASE_DIR / os.environ.get("TEMPLATE_DIR", "templates")
-MEDIA_DIR = BASE_DIR /os.environ.get("MEDIA_DIR", "media")
+MEDIA_DIR = BASE_DIR / os.environ.get("MEDIA_DIR", "media")
 STATIC_DIR = BASE_DIR / os.environ.get("STATIC_DIR", "static")
-STATIC_URL= os.environ.get("STATIC_URL","/static/")
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 IMAGE_DIR = MEDIA_DIR / os.environ.get("IMAGE_DIR", "images")
 DEFAULT_AVATAR_IMG_PATH = os.environ.get("DEFAULT_AVATAR_IMG_PATH", "media/default/default_avatar.webp")
@@ -62,7 +60,6 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     "django_extensions",
-    # "easy_thumbnails",
     "crispy_forms",
     "crispy_bootstrap5",
     "web",
@@ -119,13 +116,6 @@ DATABASES = {
     }
 }
 
-# THUMBNAIL_ALIASES = {
-#     '': {
-#         'avatar': {'size': (50, 50), 'crop': True},
-#         'thumbnail': {'size': (200, 200), 'crop': True},
-#         'default': {'size': (1600, 1600), 'crop': True},
-#     },
-# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -151,3 +141,11 @@ USE_I18N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+DEFAULT_FROM_EMAIL = 'noreply@djangogramm.com'
