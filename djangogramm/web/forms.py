@@ -1,12 +1,9 @@
-from crispy_forms.templatetags.crispy_forms_field import css_class
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import AppUser, UserProfile, Image, Post
+from .models import AppUser, UserProfile, Post, Tag
 from cloudinary.forms import CloudinaryFileField
-from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Field, Submit
-from crispy_bootstrap5.bootstrap5 import FloatingField
 
 
 class LoginForm(forms.Form):
@@ -20,10 +17,37 @@ class RegisterForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Enter tag name'}
+            )
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        if name:
+            name = name.strip().lower()
+        return name
+
+
 class PostForm(forms.ModelForm):
+    tags = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter tags separated by commas'
+            }
+        )
+    )
+
     class Meta:
         model = Post
-        fields = ['title', 'text']
+        fields = ['title', 'text', 'tags']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,7 +59,20 @@ class PostForm(forms.ModelForm):
                 css_class='form-floating mb-3 ms-3 pe-3'
             ),
             Div(
-                Field('text', css_class='form-control', rows=4, placeholder='Describe your post'),
+                Field(
+                    'text',
+                    css_class='form-control',
+                    rows=4,
+                    placeholder='Describe your post'
+                ),
+                css_class='form-floating mb-3 ms-3 pe-3'
+            ),
+            Div(
+                Field(
+                    'tags',
+                    css_class='form-control',
+                    placeholder='Enter tags separated by commas'
+                ),
                 css_class='form-floating mb-3 ms-3 pe-3'
             ),
             Div(
@@ -43,6 +80,28 @@ class PostForm(forms.ModelForm):
                 css_class='d-flex justify-content-center'
             ),
         )
+
+    def clean_tags(self):
+        tags_str = self.cleaned_data.get('tags', '')
+        if not tags_str:
+            return []
+        
+        # Разбиваем строку на отдельные теги и очищаем их
+        tag_names = [
+            tag.strip().lower() for tag in tags_str.split(',') if tag.strip()
+        ]
+        return tag_names
+
+    def save(self, commit=True):
+        post = super().save(commit=False)
+        if commit:
+            post.save()
+            # Обрабатываем теги
+            tag_names = self.cleaned_data.get('tags', [])
+            for tag_name in tag_names:
+                tag, created = Tag.objects.get_or_create(name=tag_name)
+                post.tags.add(tag)
+        return post
 
 
 class UserProfileForm(forms.ModelForm):
