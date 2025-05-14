@@ -4,8 +4,14 @@ from django.urls import reverse
 from PIL import Image as PILImage
 from io import BytesIO
 from django.core.files.uploadedfile import SimpleUploadedFile
-from ..models import *
+from ..models import (
+    AppUser, UserProfile, Post, Image, Tag,
+    Comment, PostReaction, CommentReaction, ReactionType
+)
 from ..views import convert_and_save_image
+from django.contrib.auth import get_user_model
+
+AppUser = get_user_model()
 
 
 class ResizeAndConvertImageTest(TestCase):
@@ -192,6 +198,221 @@ class UsersListViewTest(TestCase):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('users_list'))
         self.assertEqual(response.status_code, 403)
+
+
+class EditPostViewTest(TestCase):
+
+    def setUp(self):
+        self.username = 'testuser1'
+        self.password = 'Alltestuserspassword'
+        self.email = 'newtestuseremail@email.com'
+        self.user = AppUser.objects.create_user(
+            username=self.username,
+            password=self.password,
+            email=self.email
+        )
+        self.post = Post.objects.create(
+            author=self.user,
+            title="Test post",
+            text="This is a test post",
+            published=True
+        )
+        self.tag = Tag.objects.create(name="test")
+        self.post.tags.add(self.tag)
+
+    def test_edit_post_get_request(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(
+            reverse('web:posts:edit', kwargs={'pk': self.post.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'edit_post.html')
+        self.assertContains(response, "Test post")
+        self.assertContains(response, "This is a test post")
+        self.assertContains(response, "test")
+
+    def test_edit_post_with_tags(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(
+            reverse('web:posts:edit', kwargs={'pk': self.post.pk}),
+            {
+                'title': 'Updated Post',
+                'text': 'Updated Content',
+                'tags': 'newtag1, newtag2'
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.title, 'Updated Post')
+        self.assertEqual(self.post.text, 'Updated Content')
+        self.assertEqual(self.post.tags.count(), 2)
+        self.assertTrue(Tag.objects.filter(name='newtag1').exists())
+        self.assertTrue(Tag.objects.filter(name='newtag2').exists())
+
+
+class DeletePostViewTest(TestCase):
+
+    def setUp(self):
+        self.username = 'testuser1'
+        self.password = 'Alltestuserspassword'
+        self.email = 'newtestuseremail@email.com'
+        self.user = AppUser.objects.create_user(
+            username=self.username,
+            password=self.password,
+            email=self.email
+        )
+        self.post = Post.objects.create(
+            author=self.user,
+            title="Test post",
+            text="This is a test post",
+            published=True
+        )
+
+    def test_delete_post(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(
+            reverse('web:posts:delete', kwargs={'pk': self.post.pk})
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Post.objects.filter(pk=self.post.pk).exists())
+
+
+class TagViewsTest(TestCase):
+
+    def setUp(self):
+        self.username = 'testuser1'
+        self.password = 'Alltestuserspassword'
+        self.email = 'newtestuseremail@email.com'
+        self.user = AppUser.objects.create_user(
+            username=self.username,
+            password=self.password,
+            email=self.email
+        )
+        self.post = Post.objects.create(
+            author=self.user,
+            title="Test post",
+            text="This is a test post",
+            published=True
+        )
+        self.tag = Tag.objects.create(name="test")
+        self.post.tags.add(self.tag)
+
+    def test_tag_list_view(self):
+        response = self.client.get(reverse('web:tags:list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'tag_list.html')
+        self.assertContains(response, "test")
+
+    def test_posts_by_tag_view(self):
+        response = self.client.get(
+            reverse('web:posts:by_tag', kwargs={'tag_name': 'test'})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'posts_list.html')
+        self.assertContains(response, "Test post")
+
+
+class PostReactionViewTest(TestCase):
+    def setUp(self):
+        self.username = 'testuser1'
+        self.password = 'Alltestuserspassword'
+        self.email = 'newtestuseremail@email.com'
+        self.user = AppUser.objects.create_user(
+            username=self.username,
+            password=self.password,
+            email=self.email
+        )
+        self.post = Post.objects.create(
+            author=self.user,
+            title="Test post",
+            text="This is a test post",
+            published=True
+        )
+
+    def test_like_post(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(
+            reverse('web:posts:like', kwargs={'pk': self.post.pk})
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            PostReaction.objects.filter(
+                user=self.user,
+                post=self.post,
+                reaction=ReactionType.LIKE
+            ).exists()
+        )
+
+    def test_unlike_post(self):
+        # Сначала ставим лайк
+        PostReaction.objects.create(
+            user=self.user,
+            post=self.post,
+            reaction=ReactionType.LIKE
+        )
+        
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(
+            reverse('web:posts:unlike', kwargs={'pk': self.post.pk})
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(
+            PostReaction.objects.filter(
+                user=self.user,
+                post=self.post
+            ).exists()
+        )
+
+    def test_dislike_post(self):
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(
+            reverse('web:posts:dislike', kwargs={'pk': self.post.pk})
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            PostReaction.objects.filter(
+                user=self.user,
+                post=self.post,
+                reaction=ReactionType.DISLIKE
+            ).exists()
+        )
+
+    def test_undislike_post(self):
+        # Сначала ставим дизлайк
+        PostReaction.objects.create(
+            user=self.user,
+            post=self.post,
+            reaction=ReactionType.DISLIKE
+        )
+        
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.post(
+            reverse('web:posts:undislike', kwargs={'pk': self.post.pk})
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(
+            PostReaction.objects.filter(
+                user=self.user,
+                post=self.post
+            ).exists()
+        )
+
+    def test_post_detail_with_reactions(self):
+        # Создаем лайк
+        PostReaction.objects.create(
+            user=self.user,
+            post=self.post,
+            reaction=ReactionType.LIKE
+        )
+        
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(
+            reverse('web:posts:detail', kwargs={'pk': self.post.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        # Проверяем, что отображается заполненная иконка сердца
+        self.assertContains(response, "bi-heart-fill")
+        self.assertContains(response, "1")  # Проверяем счетчик лайков
 
 
 
