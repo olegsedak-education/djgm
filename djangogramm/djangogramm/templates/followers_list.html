@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Followers of {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Followers of {{ user.username }}</h2>
+    
+    {% if followers %}
+        <div class="row">
+            {% for follower in followers %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'web:users:detail' follower.user.pk %}" class="text-decoration-none">
+                                    {{ follower.user.username }}
+                                </a>
+                            </h5>
+                            {% if follower.user.userprofile.bio %}
+                                <p class="card-text">{{ follower.user.userprofile.bio|truncatewords:30 }}</p>
+                            {% endif %}
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Following since {{ follower.created_at|date:"d.m.Y" }}
+                                </small>
+                            </p>
+                            {% if request.user != follower.user %}
+                                {% if request.user in follower.user.followers.all %}
+                                    <a href="{% url 'web:users:unfollow' follower.user.username %}" 
+                                       class="btn btn-outline-danger">
+                                        Unfollow
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'web:users:follow' follower.user.username %}" 
+                                       class="btn btn-outline-primary">
+                                        Follow
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            {{ user.username }} has no followers yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

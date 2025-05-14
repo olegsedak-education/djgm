@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Following {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Following {{ user.username }}</h2>
+    
+    {% if following %}
+        <div class="row">
+            {% for follow in following %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'web:users:detail' follow.following_user.pk %}" class="text-decoration-none">
+                                    {{ follow.following_user.username }}
+                                </a>
+                            </h5>
+                            {% if follow.following_user.userprofile.bio %}
+                                <p class="card-text">{{ follow.following_user.userprofile.bio|truncatewords:30 }}</p>
+                            {% endif %}
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Following since {{ follow.created_at|date:"d.m.Y" }}
+                                </small>
+                            </p>
+                            {% if request.user != follow.following_user %}
+                                <a href="{% url 'web:users:unfollow' follow.following_user.username %}" 
+                                   class="btn btn-outline-danger">
+                                    Unfollow
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            {{ user.username }} is not following anyone yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

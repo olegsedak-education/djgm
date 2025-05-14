@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tags{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Tags</h2>
+        <div class="row">
+            {% for tag in tags %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'web:tag_detail' tag.slug %}" class="text-decoration-none">
+                                    #{{ tag.name }}
+                                </a>
+                            </h5>
+                            <p class="card-text">
+                                <small class="text-muted">{{ tag.posts.count }} posts</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <p class="text-center">No tags found.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %} 

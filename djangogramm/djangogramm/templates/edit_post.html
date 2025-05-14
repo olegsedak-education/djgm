@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Edit post{% endblock %}
+
+{% block content %}
+    <div class="col-md-6 mx-auto mt-5">
+        <h2 class="container mt-5 text-center">Edit post</h2>
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="mb-3 p-4 text-center">
+                <button class="btn btn-outline-primary p-2 text-center" 
+                        id="upload_widget" type="button">
+                    Upload images
+                </button>
+                <input type="hidden" id="image_urls" name="image_urls">
+            </div>
+            <div id="thumbnails" class="d-flex flex-wrap mt-3">
+                {% for image in post.images.all %}
+                    <div class="position-relative m-2">
+                        <img src="{{ image.image.url }}" 
+                             alt="{{ post.title }}" 
+                             class="img-thumbnail" 
+                             style="max-width: 150px;">
+                    </div>
+                {% endfor %}
+            </div>
+            {% crispy post_form %}
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_head %}
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+    <script src="{% static 'js/upload-widget.js' %}" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const cloudName = "{{ cloud_name }}";
+            const uploadPreset = "{{ upload_preset }}";
+            initCloudinaryUploadWidget(cloudName, uploadPreset);
+        });
+    </script>
+{% endblock %} 
