@@ -7,6 +7,21 @@
     <div class="list-group">
         <h2 class="h2 p-2">{{ post.title }}</h2>
         <p class="p-2">{{ post.text }}</p>
+        
+        {% if post.tags.all %}
+        <div class="p-2">
+            <h5>Теги:</h5>
+            <div class="d-flex flex-wrap gap-2">
+                {% for tag in post.tags.all %}
+                    <a href="{% url 'web:posts:by_tag' tag.name %}" 
+                       class="badge bg-primary text-decoration-none">
+                        #{{ tag.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="row">
             {% for image in post.images.all %}
                 <div class="col-md-auto">
@@ -16,5 +31,45 @@
                 <p>No images</p>
             {% endfor %}
         </div>
+
+        {% if user.is_authenticated %}
+        <div class="p-2 mt-3">
+            <div class="btn-group" role="group">
+                {% if user_reaction == 'LIKE' %}
+                    <a href="{% url 'web:posts:unlike' post.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-heart-fill"></i> {{ post.likes_count }}
+                    </a>
+                {% else %}
+                    <a href="{% url 'web:posts:like' post.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-heart"></i> {{ post.likes_count }}
+                    </a>
+                {% endif %}
+
+                {% if user_reaction == 'DISLIKE' %}
+                    <a href="{% url 'web:posts:undislike' post.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-hand-thumbs-down-fill"></i> {{ post.dislikes_count }}
+                    </a>
+                {% else %}
+                    <a href="{% url 'web:posts:dislike' post.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-hand-thumbs-down"></i> {{ post.dislikes_count }}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="p-2 mt-3">
+            <div class="btn-group" role="group">
+                <button class="btn btn-outline-secondary" disabled>
+                    <i class="bi bi-heart"></i> {{ post.likes_count }}
+                </button>
+                <button class="btn btn-outline-secondary" disabled>
+                    <i class="bi bi-hand-thumbs-down"></i> {{ post.dislikes_count }}
+                </button>
+            </div>
+            <small class="text-muted d-block mt-2">
+                <a href="{% url 'web:auth:login' %}">Войдите</a>, чтобы оценить пост
+            </small>
+        </div>
+        {% endif %}
     </div>
 {% endblock %}
