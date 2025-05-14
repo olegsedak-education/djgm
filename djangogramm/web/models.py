@@ -75,6 +75,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     images = models.ManyToManyField(Image, related_name='posts')
+    tags = models.ManyToManyField('Tag', related_name='posts', blank=True)
 
     def likes_count(self):
         return self.postreaction_set.filter(reaction=ReactionType.LIKE).count()
@@ -147,8 +148,7 @@ class CommentReaction(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=50)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
