@@ -1,10 +1,8 @@
-from datetime import datetime
-from django.db import models
-from django.utils import timezone
-from django.contrib.auth.models import AbstractUser
-from django_enumfield.enum import Enum, EnumField
-from django.conf import settings
 from cloudinary.models import CloudinaryField
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django_enumfield.enum import Enum, EnumField
 
 
 class AppUser(AbstractUser):
@@ -50,7 +48,6 @@ class ReactionType(Enum):
     LIKE = 1
     DISLIKE = - 1
 
-
     __labels__ = {
         LIKE: "Like",
         DISLIKE: "Dislike",
@@ -61,7 +58,7 @@ class ReactionType(Enum):
 
 
 class Image(models.Model):
-    image = CloudinaryField('image')
+    image = models.ImageField(upload_to='images/')
     uploadede_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -85,6 +82,7 @@ class Post(models.Model):
 
     def __str__(self):
         return f'{self.title}, {self.author}, {self.text}, {self.created_at}, {self.updated_at}'
+
 
 class Comment(models.Model):
     author = models.ForeignKey(AppUser, on_delete=models.CASCADE)
@@ -113,22 +111,6 @@ class PostReaction(models.Model):
     def __str__(self):
         return f"PostReaction: {self.get_reaction_type()} by {self.user.username} on {self.post.title}"
 
-# class ImageReaction(models.Model):
-#     user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
-#     image = models.ForeignKey(Image, on_delete=models.CASCADE)
-#     reaction = EnumField(ReactionType, default=ReactionType.default())
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-#
-#     class Meta:
-#         unique_together = ('user', 'image')
-#
-#     def get_reaction_type(self):
-#         return self.reaction.label
-#
-#     def __str__(self):
-#         return f"ImageReaction: {self.reaction.label} by {self.user.username}"
-
 
 class CommentReaction(models.Model):
     user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
@@ -155,6 +137,7 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+
 class Following(models.Model):
     user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='followings')
     following_user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='followers')
@@ -162,5 +145,6 @@ class Following(models.Model):
 
     class Meta:
         unique_together = ('user', 'following_user')
+
     def __str__(self):
         return f'{self.user.username} follows {self.following_user.username}'
