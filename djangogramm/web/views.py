@@ -62,15 +62,12 @@ def posts_list(request):
 
 
 def feed(request):
-    # Get IDs of users that the current user follows
     following_ids = Following.objects.filter(
         user=request.user
     ).values_list('following_user_id', flat=True)
 
-    # Add current user's ID
     following_ids = list(following_ids) + [request.user.id]
 
-    # Get posts from followed users
     posts = Post.objects.filter(
         author_id__in=following_ids
     ).select_related('author').prefetch_related(
@@ -121,6 +118,7 @@ def create_post(request):
             post = post_form.save(commit=False)
             post.author = request.user
             post.save()
+            post_form.save()
 
             images_urls = request.POST.get('image_urls', '').split(',')
             for url in images_urls:
@@ -183,7 +181,7 @@ def post_reaction_handler(request, pk, reaction_type):
     else:
         reaction.reaction = reaction_type
         reaction.save()
-    return redirect('posts:detail', pk=post.id)
+    return redirect('web:posts:detail', pk=post.id)
 
 
 @login_required
@@ -202,7 +200,7 @@ def unlike_post(request, pk):
         user=request.user,
         post__id=pk,
     ).delete()
-    return redirect('posts:detail', pk=pk)
+    return redirect('web:posts:detail', pk=pk)
 
 
 @login_required
@@ -212,7 +210,7 @@ def undislike_post(request, pk):
         post__id=pk,
         reaction=ReactionType.DISLIKE
     ).delete()
-    return redirect('posts:detail', pk=pk)
+    return redirect('web:posts:detail', pk=pk)
 
 
 def about(request):
@@ -229,9 +227,11 @@ def send_confirmation_email(request, user):
     subject = "Confirm your email"
     message = render_to_string('email_confirmation.html',
                                {'user': user, 'activation_link': activation_link})
+    text_message = f"Confirm your email\n\nHello {user.username},\n\nPlease confirm your email by clicking the link below:\n{activation_link}"
+
     send_mail(
         subject=subject,
-        message='',  # Empty message . Using HTML mail
+        message=text_message,
         from_email='noreply@djangogramm.com',
         recipient_list=[user.email],
         html_message=message
@@ -303,7 +303,6 @@ def edit_profile(request, pk):
 def edit_post(request, pk):
     post = get_object_or_404(Post, id=pk)
 
-    # Проверяем, является ли пользователь автором поста
     if post.author != request.user:
         messages.error(request, "You can't edit this post!")
         return redirect('web:posts:detail', pk=post.id)
@@ -315,7 +314,6 @@ def edit_post(request, pk):
             messages.success(request, "Post updated successfully!")
             return redirect('web:posts:detail', pk=post.id)
     else:
-        # Инициализируем форму с текущими данными поста
         initial_data = {
             'title': post.title,
             'text': post.text,
@@ -437,3 +435,13 @@ def test_html_email(request):
         print(f"Error sending HTML email: {str(e)}")  # Debug output
         messages.error(request, f"Error sending email: {str(e)}")
     return redirect('web:home')
+
+
+@login_required
+def delete_post(request, pk):
+    post = get_object_or_404(Post, id=pk)
+    if post.author != request.user:
+        messages.error(request, "You can't delete this post!")
+        return redirect('web:posts:detail', pk=post.id)
+    post.delete()
+    return redirect('web:posts:list')
