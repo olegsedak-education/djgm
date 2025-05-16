@@ -37,6 +37,7 @@ post_patterns = [
     path("create/", views.create_post, name="create"),
     path("<int:pk>/", views.post_detail, name="detail"),
     path("<int:pk>/edit/", views.edit_post, name="edit"),
+    path("<int:pk>/delete/", views.delete_post, name="delete"),
     path("<int:pk>/like/", views.like_post, name="like"),
     path("<int:pk>/unlike/", views.unlike_post, name="unlike"),
     path("<int:pk>/dislike/", views.dislike_post, name="dislike"),
