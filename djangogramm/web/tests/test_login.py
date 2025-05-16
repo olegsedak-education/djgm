@@ -18,12 +18,18 @@ class LogInTest(TestCase):
 
 
     def test_successful_login(self):
-        response = self.client.post(reverse('login'), {'username': self.username, 'password': self.password})
-        self.assertEqual(response.status_code,302)
-        self.assertRedirects(response, reverse('home'))
+        response = self.client.post(
+            reverse('web:auth:login'),
+            {'username': self.username, 'password': self.password}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('web:home'))
 
 
     def test_invalid_login(self):
-        response = self.client.post(reverse('login'), {'username': self.username, 'password': 'wrongtestpassword'})
+        response = self.client.post(
+            reverse('web:auth:login'),
+            {'username': self.username, 'password': 'wrongtestpassword'}
+        )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Invalid username or password')

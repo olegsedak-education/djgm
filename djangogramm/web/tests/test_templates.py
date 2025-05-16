@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from ..models import AppUser, Post, Tag, PostReaction, ReactionType
+from ..models import AppUser, Post, Tag, PostReaction, ReactionType, Following
 
 
 class TemplateTest(TestCase):
@@ -14,8 +14,7 @@ class TemplateTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title='Test Post',
-            text='This is a test post',
-            published=True
+            text='Test Content'
         )
         self.tag = Tag.objects.create(name='test')
         self.post.tags.add(self.tag)
@@ -32,11 +31,10 @@ class TemplateTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'post_detail.html')
         self.assertContains(response, 'Test Post')
-        self.assertContains(response, 'This is a test post')
+        self.assertContains(response, 'Test Content')
         self.assertContains(response, 'test')
 
     def test_post_detail_with_reactions(self):
-        # Создаем лайк
         PostReaction.objects.create(
             user=self.user,
             post=self.post,
@@ -66,14 +64,19 @@ class TemplateTest(TestCase):
         self.assertContains(response, 'Test Post')
 
     def test_user_profile_template(self):
+        self.client.login(username='testuser', password='testpass123')
         response = self.client.get(
-            reverse('web:users:detail', kwargs={'username': 'testuser'})
+            reverse('web:users:detail', kwargs={'pk': self.user.pk})
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'user_detail.html')
+        self.assertTemplateUsed(response, 'user_profile.html')
         self.assertContains(response, 'testuser')
 
     def test_feed_template(self):
+        Following.objects.create(
+            user=self.user,
+            following_user=self.user
+        )
         self.client.login(username='testuser', password='testpass123')
         response = self.client.get(reverse('web:feed'))
         self.assertEqual(response.status_code, 200)

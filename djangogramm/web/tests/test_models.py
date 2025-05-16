@@ -1,6 +1,9 @@
 from django.test import TestCase
 from datetime import date, timedelta
 from django.utils import timezone
+from io import BytesIO
+from PIL import Image as PILImage
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 from ..models import *
@@ -82,34 +85,43 @@ class PostModelTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
 
     def test_post_create(self):
         self.assertEqual(self.post.author.username, "test_user")
         self.assertEqual(self.post.title, "Test post")
         self.assertEqual(self.post.text, "This is a test post")
-        self.assertTrue(self.post.published)
 
 
 class ImageModelTest(TestCase):
 
     def setUp(self):
-        self.image = Image.objects.create(image="djangogramm/images_for_test/imgfortest.jpg")
-
+        image = PILImage.new("RGB", (100, 100), color="red")
+        image_io = BytesIO()
+        image.save(image_io, format="JPEG")
+        image_io.seek(0)
+        self.image_file = SimpleUploadedFile(
+            name="test_image.jpg",
+            content=image_io.getvalue(),
+            content_type="image/jpeg"
+        )
+        self.image = Image.objects.create(image=self.image_file)
 
     def test_image_creation(self):
-        self.assertEqual(self.image.image.name, "djangogramm/images_for_test/imgfortest.jpg")
-
+        self.assertIsNotNone(self.image.image)
+        self.assertTrue(hasattr(self.image.image, 'url'))
 
     def test_uploadede_at_auto_now_add(self):
         self.assertIsNotNone(self.image.uploadede_at)
-        self.assertAlmostEqual(self.image.uploadede_at, timezone.now(), delta=timedelta(seconds=1))
+        self.assertAlmostEqual(
+            self.image.uploadede_at,
+            timezone.now(),
+            delta=timedelta(seconds=1)
+        )
 
-
-    def test_image_str_method(self ):
-        self.assertEqual(str(self.image), "/media/djangogramm/images_for_test/imgfortest.jpg")
+    def test_image_str_method(self):
+        self.assertEqual(str(self.image), self.image.image.url)
 
 
 class CommentModelTest(TestCase):
@@ -123,8 +135,7 @@ class CommentModelTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
         self.comment = Comment.objects.create(
             author=self.user,
@@ -153,8 +164,7 @@ class PostRectionModelTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
         self.post_reaction = PostReaction.objects.create(
             user=self.user,
@@ -187,8 +197,7 @@ class CommentRectionModelTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
         self.comment = Comment.objects.create(
             author=self.user,
@@ -226,19 +235,14 @@ class TestTagModel(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
-        self.tag = Tag.objects.create(
-            name = "test tag name",
-            post=self.post
-        )
-
+        self.tag = Tag.objects.create(name="test tag name")
+        self.post.tags.add(self.tag)
 
     def test_tag_creation(self):
         self.assertEqual(self.tag.name, "test tag name")
-        self.assertEqual(self.tag.post.title , "Test post")
-
+        self.assertEqual(self.tag.posts.first().title, "Test post")
 
     def test_tag_str_method(self):
         self.assertEqual(str(self.tag), "test tag name")

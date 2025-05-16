@@ -1,36 +1,16 @@
-from http.client import responses
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from PIL import Image as PILImage
 from io import BytesIO
 from django.core.files.uploadedfile import SimpleUploadedFile
+
 from ..models import (
     AppUser, UserProfile, Post, Image, Tag,
-    Comment, PostReaction, CommentReaction, ReactionType
+    PostReaction, ReactionType
 )
-from ..views import convert_and_save_image
-from django.contrib.auth import get_user_model
 
 AppUser = get_user_model()
-
-
-class ResizeAndConvertImageTest(TestCase):
-
-    def setUp(self):
-        image = PILImage.new("RGB", (500, 500), color="blue")
-        image_io = BytesIO()
-        image.save(image_io, format="JPEG")
-        image_io.seek(0)
-        self.image_file = SimpleUploadedFile(
-            name="test_image_file.jpg",
-            content=image_io.getvalue(),
-            content_type="image/jpeg"
-        )
-
-    def test_resize_and_convert_image_to_webp(self):
-        image_instance = Image.objects.create(image=self.image_file)
-        webp_path = convert_and_save_image(image_instance)
-        self.assertTrue(webp_path.exists())
 
 
 class UserProfileViewTest(TestCase):
@@ -50,15 +30,27 @@ class UserProfileViewTest(TestCase):
         )
 
     def test_user_profile_view(self):
-        response = self.client.get(reverse('user_profile', args=[self.user.id]))
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('web:users:detail', args=[self.user.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "testuser1")
 
 
 class FeedViewTest(TestCase):
 
+    def setUp(self):
+        self.username = 'testuser1'
+        self.password = 'Alltestuserspassword'
+        self.email = 'newtestuseremail@email.com'
+        self.user = AppUser.objects.create_user(
+            username=self.username,
+            password=self.password,
+            email=self.email
+        )
+
     def test_feed_view(self):
-        response = self.client.get(reverse('feed'))
+        self.client.login(username=self.username, password=self.password)
+        response = self.client.get(reverse('web:feed'))
         self.assertEqual(response.status_code, 200)
 
 
@@ -75,19 +67,16 @@ class PostsListViewTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post 1",
-            text="This is a test post 1 text",
-            published=True
+            text="This is a test post 1 text"
         )
         self.post = Post.objects.create(
             author=self.user,
             title="Test post 2",
-            text="This is a test post 2 text",
-            published=True
+            text="This is a test post 2 text"
         )
 
-
     def test_posts_list_view(self):
-        response = self.client.get(reverse('posts_list'))
+        response = self.client.get(reverse('web:posts:list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test post 1")
         self.assertContains(response, "Test post 2")
@@ -107,12 +96,11 @@ class PostDetailViewTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post 1",
-            text="This is a test post 1 text",
-            published=True
+            text="This is a test post 1 text"
         )
 
     def test_post_detail_view(self):
-        response = self.client.get(reverse('post_detail', args=[self.post.id]))
+        response = self.client.get(reverse('web:posts:detail', args=[self.post.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test post 1")
         self.assertContains(response, "This is a test post 1 text")
@@ -141,23 +129,21 @@ class CreatePostViewTest(TestCase):
         self.content = {
             'title': 'Test Post',
             'text': 'This is a test post',
-            'image': self.image
+            'image_urls': 'http://example.com/test.jpg'
         }
-
 
     def test_create_post_with_image(self):
         self.client.logout()
         self.client.login(username=self.username, password=self.password)
-        response = self.client.post(reverse("create_post"), self.content)
+        response = self.client.post(reverse('web:posts:create'), self.content)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Post.objects.filter(title="Test Post").exists())
         self.assertTrue(Image.objects.exists())
 
-
     def test_create_post_get_request(self):
         self.client.logout()
         self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('create_post'))
+        response = self.client.get(reverse('web:posts:create'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'create_post.html')
 
@@ -184,20 +170,19 @@ class UsersListViewTest(TestCase):
             email=self.email
         )
 
-
     def test_users_list_view_as_admin(self):
         self.client.logout()
         self.client.login(username=self.admin_username, password=self.admin_password)
-        response = self.client.get(reverse('users_list'))
+        response = self.client.get(reverse('web:users:list'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users_list.html')
-
 
     def test_users_list_view_as_non_admin(self):
         self.client.logout()
         self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse('users_list'))
+        response = self.client.get(reverse('web:users:list'))
         self.assertEqual(response.status_code, 403)
+        self.assertContains(response, "403 Forbidden: Access denied", status_code=403)
 
 
 class EditPostViewTest(TestCase):
@@ -214,8 +199,7 @@ class EditPostViewTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
         self.tag = Tag.objects.create(name="test")
         self.post.tags.add(self.tag)
@@ -264,8 +248,7 @@ class DeletePostViewTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
 
     def test_delete_post(self):
@@ -291,8 +274,7 @@ class TagViewsTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
         self.tag = Tag.objects.create(name="test")
         self.post.tags.add(self.tag)
@@ -325,8 +307,7 @@ class PostReactionViewTest(TestCase):
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post",
-            published=True
+            text="This is a test post"
         )
 
     def test_like_post(self):
@@ -344,13 +325,12 @@ class PostReactionViewTest(TestCase):
         )
 
     def test_unlike_post(self):
-        # Сначала ставим лайк
         PostReaction.objects.create(
             user=self.user,
             post=self.post,
             reaction=ReactionType.LIKE
         )
-        
+
         self.client.login(username=self.username, password=self.password)
         response = self.client.post(
             reverse('web:posts:unlike', kwargs={'pk': self.post.pk})
@@ -378,13 +358,12 @@ class PostReactionViewTest(TestCase):
         )
 
     def test_undislike_post(self):
-        # Сначала ставим дизлайк
         PostReaction.objects.create(
             user=self.user,
             post=self.post,
             reaction=ReactionType.DISLIKE
         )
-        
+
         self.client.login(username=self.username, password=self.password)
         response = self.client.post(
             reverse('web:posts:undislike', kwargs={'pk': self.post.pk})
@@ -398,24 +377,16 @@ class PostReactionViewTest(TestCase):
         )
 
     def test_post_detail_with_reactions(self):
-        # Создаем лайк
         PostReaction.objects.create(
             user=self.user,
             post=self.post,
             reaction=ReactionType.LIKE
         )
-        
+
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(
             reverse('web:posts:detail', kwargs={'pk': self.post.pk})
         )
         self.assertEqual(response.status_code, 200)
-        # Проверяем, что отображается заполненная иконка сердца
         self.assertContains(response, "bi-heart-fill")
-        self.assertContains(response, "1")  # Проверяем счетчик лайков
-
-
-
-
-
-
+        self.assertContains(response, "1")

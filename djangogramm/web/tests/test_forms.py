@@ -1,9 +1,8 @@
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image as PILImage
-from io import BytesIO
+from unittest.mock import patch
+
 from ..forms import RegisterForm, LoginForm, PostForm, UserProfileForm, TagForm
-from ..models import AppUser, Post, Tag
+from ..models import AppUser, Tag
 
 
 class RegisterFormTest(TestCase):
@@ -70,7 +69,7 @@ class PostFormTest(TestCase):
 
     def test_post_form_invalid_data(self):
         form_data = {
-            'title': '',  # Пустой заголовок
+            'title': '',
             'text': 'This is a test post',
             'tags': 'test'
         }
@@ -87,24 +86,60 @@ class UserProfileFormTest(TestCase):
             email='test@example.com'
         )
 
-    def test_profile_form_valid_data(self):
+    @patch('cloudinary.models.CloudinaryField.to_python')
+    def test_profile_form_valid_data(self, mock_to_python):
+        mock_to_python.return_value = 'test_avatar.jpg'
         form_data = {
             'first_name': 'Test',
             'last_name': 'User',
-            'bio': 'Test bio'
+            'bio': 'Test bio',
+            'birth_date': '1990-01-01'
         }
         form = UserProfileForm(data=form_data, user=self.user)
         self.assertTrue(form.is_valid())
 
-    def test_profile_form_invalid_data(self):
+    @patch('cloudinary.models.CloudinaryField.to_python')
+    def test_profile_form_invalid_data(self, mock_to_python):
+        mock_to_python.return_value = 'test_avatar.jpg'
         form_data = {
-            'first_name': 'Test' * 50,  # Слишком длинное имя
+            'first_name': 'Test' * 50,
             'last_name': 'User',
             'bio': 'Test bio'
         }
         form = UserProfileForm(data=form_data, user=self.user)
         self.assertFalse(form.is_valid())
         self.assertIn('first_name', form.errors)
+
+    @patch('cloudinary.models.CloudinaryField.to_python')
+    def test_profile_form_with_avatar(self, mock_to_python):
+        mock_to_python.return_value = 'test_avatar.jpg'
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+        import io
+
+        file = io.BytesIO()
+        image = Image.new('RGB', (100, 100), 'white')
+        image.save(file, 'png')
+        file.name = 'test.png'
+        file.seek(0)
+
+        form_data = {
+            'first_name': 'Test',
+            'last_name': 'User',
+            'bio': 'Test bio',
+            'birth_date': '1990-01-01',
+            'avatar': SimpleUploadedFile(
+                name='test.png',
+                content=file.read(),
+                content_type='image/png'
+            )
+        }
+        form = UserProfileForm(
+            data=form_data,
+            files={'avatar': form_data['avatar']},
+            user=self.user
+        )
+        self.assertTrue(form.is_valid())
 
 
 class TagFormTest(TestCase):
@@ -117,7 +152,7 @@ class TagFormTest(TestCase):
 
     def test_tag_form_invalid_data(self):
         form_data = {
-            'name': ''  # Пустое имя тега
+            'name': ''
         }
         form = TagForm(data=form_data)
         self.assertFalse(form.is_valid())
@@ -126,8 +161,8 @@ class TagFormTest(TestCase):
     def test_tag_form_duplicate_name(self):
         Tag.objects.create(name='existingtag')
         form_data = {
-            'name': 'existingtag'  # Дублирующееся имя тега
+            'name': 'existingtag'
         }
         form = TagForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn('name', form.errors) 
+        self.assertIn('name', form.errors)
