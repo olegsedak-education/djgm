@@ -1,4 +1,4 @@
-% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Profile of {{ user.username }}{% endblock %}
 
@@ -6,11 +6,19 @@
     <div class="container mt-4">
         <div class="row">
             <div class="col-md-3">
-                <img src="{{ profile.avatar_url if profile.avatar else '/media/default/default_avatar.webp' }}" class="rounded-circle" width="30" height="30">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" class="rounded-circle" width="30" height="30">
+                {% else %}
+                    <img src="/media/default/default_avatar.webp" class="rounded-circle" width="30" height="30">
+                {% endif %}
             </div>
             <div class="col-md-9">
                 <div class="text-center">
-                    <img src="{{ user.profile.avatar_url }}" class="rounded" alt="Avatar">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" class="rounded" alt="Avatar">
+                    {% else %}
+                        <img src="/media/default/default_avatar.webp" class="rounded" alt="Avatar">
+                    {% endif %}
                     <h2>{{ user.username }}'s Profile</h2>
                 </div>
                 <ul class="list-group">
