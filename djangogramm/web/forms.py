@@ -85,18 +85,15 @@ class PostForm(forms.ModelForm):
         tags_str = self.cleaned_data.get('tags', '')
         if not tags_str:
             return []
-        
-        # Разбиваем строку на отдельные теги и очищаем их
-        tag_names = [
-            tag.strip().lower() for tag in tags_str.split(',') if tag.strip()
-        ]
-        return tag_names
+        tags = [tag.strip() for tag in tags_str.split(',')]
+        return [tag for tag in tags if tag]
 
     def save(self, commit=True):
         post = super().save(commit=False)
         if commit:
             post.save()
-            # Обрабатываем теги
+            if self.instance.pk:
+                post.tags.clear()
             tag_names = self.cleaned_data.get('tags', [])
             for tag_name in tag_names:
                 tag, created = Tag.objects.get_or_create(name=tag_name)
@@ -107,7 +104,6 @@ class PostForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=False)
     last_name = forms.CharField(max_length=30, required=False)
-    avatar = CloudinaryFileField()
 
     class Meta:
         model = UserProfile
