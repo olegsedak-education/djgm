@@ -1,13 +1,14 @@
+from io import BytesIO
+
+from PIL import Image as PILImage
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-from PIL import Image as PILImage
-from io import BytesIO
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 from ..models import (
     AppUser, UserProfile, Post, Image, Tag,
-    PostReaction, ReactionType
+    PostReaction, ReactionType, Following
 )
 
 AppUser = get_user_model()
@@ -295,6 +296,7 @@ class TagViewsTest(TestCase):
 
 
 class PostReactionViewTest(TestCase):
+
     def setUp(self):
         self.username = 'testuser1'
         self.password = 'Alltestuserspassword'
@@ -390,3 +392,35 @@ class PostReactionViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "bi-heart-fill")
         self.assertContains(response, "1")
+
+
+class FollowUnfollowViewTest(TestCase):
+
+    def setUp(self):
+        self.user1 = AppUser.objects.create_user(username='user1', password='pass1')
+        self.user2 = AppUser.objects.create_user(username='user2', password='pass2')
+        self.client.login(username='user1', password='pass1')
+
+    def test_follow_user(self):
+        url = reverse('web:users:follow', kwargs={'pk': self.user2.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Following.objects.filter(user=self.user1, following_user=self.user2).exists())
+
+    def test_follow_self(self):
+        url = reverse('web:users:follow', kwargs={'pk': self.user1.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Following.objects.filter(user=self.user1, following_user=self.user1).exists())
+
+    def test_unfollow_user(self):
+        Following.objects.create(user=self.user1, following_user=self.user2)
+        url = reverse('web:users:unfollow', kwargs={'pk': self.user2.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Following.objects.filter(user=self.user1, following_user=self.user2).exists())
+
+    def test_unfollow_self(self):
+        url = reverse('web:users:unfollow', kwargs={'pk': self.user1.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)

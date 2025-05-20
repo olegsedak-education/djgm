@@ -23,58 +23,6 @@ DEFAULT_AVATAR_IMG_PATH = os.environ.get("DEFAULT_AVATAR_IMG_PATH", "media/defau
 STATICFILES_DIRS = [STATIC_DIR]
 MEDIA_ROOT = MEDIA_DIR
 
-# Create logs directory if it doesn't exist
-LOGS_DIR = BASE_DIR / 'logs'
-LOGS_DIR.mkdir(exist_ok=True)
-(LOGS_DIR / 'django').mkdir(exist_ok=True)
-
-# Base logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': str(LOGS_DIR / 'django/django.log'),
-            'formatter': 'verbose',
-        },
-        'error_file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': str(LOGS_DIR / 'django/error.log'),
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file', 'error_file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'web': {  # Логи для нашего приложения
-            'handlers': ['console', 'file', 'error_file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-    },
-}
-
 CLOUDINARY_KEY_NAME = os.environ.get('CLOUDINARY_KEY_NAME')
 
 cloudinary.config(
@@ -115,6 +63,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "web",
+    'anymail',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -168,7 +117,6 @@ DATABASES = {
     }
 }
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -184,6 +132,59 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# logs section
+# Create logs directory if it doesn't exist
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
+(LOGS_DIR / 'django').mkdir(exist_ok=True)
+
+# Base logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': str(LOGS_DIR / 'django/django.log'),
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': str(LOGS_DIR / 'django/error.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file', 'error_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'web': {  # Логи для нашего приложения
+            'handlers': ['console', 'file', 'error_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Europe/Kiev"
@@ -194,12 +195,26 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email settings section - uncomment subsection you need
+# for console email output
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# for using mailjet service
+EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
+
+# for using SMTP mailjet.com
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'in-v3.mailjet.com'
 # EMAIL_PORT = 587
 # EMAIL_USE_TLS = True
 # EMAIL_USE_SSL = False
 # EMAIL_HOST_USER = os.getenv('MAILJET_API_KEY')
 # EMAIL_HOST_PASSWORD = os.getenv('MAILJET_SECRET_KEY')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@djangogramm.com')
+
+# for using django-anymail  package futurtes
+ANYMAIL = {
+    "MAILJET_API_KEY": os.getenv("MAILJET_API_KEY"),
+    "MAILJET_SECRET_KEY": os.getenv("MAILJET_SECRET_KEY"),
+}
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@djangogramm.pp.ua")

@@ -164,3 +164,4 @@ dmypy.json
 cython_debug/
 /djangogramm/web/migrations/
 !/djangogramm/web/migrations/__init__.py
+/test_mailjet.py

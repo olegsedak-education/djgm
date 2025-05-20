@@ -128,7 +128,6 @@ def create_post(request):
             post.save()
             return redirect('web:posts:detail', pk=post.id)
         else:
-            print("Ошибки формы:", post_form.errors)
             return render(request, 'create_post.html', {'post_form': post_form})
 
     else:
@@ -142,30 +141,37 @@ def create_post(request):
 
 
 @login_required
-def follow_user(request, username):
-    user_to_follow = get_object_or_404(AppUser, username=username)
+def follow_user(request, pk):
+    user_to_follow = get_object_or_404(AppUser, pk=pk)
+
     if request.user == user_to_follow:
         messages.error(request, "You can't follow yourself!")
-        return redirect('users:detail', username=username)
+        return redirect('web:users:detail', pk=pk)
 
-    Following.objects.get_or_create(
+    following_obj, created = Following.objects.get_or_create(
         user=request.user,
         following_user=user_to_follow
     )
-    return redirect('users:detail', username=username)
+
+    if created:
+        messages.success(request, f"You are now following {user_to_follow.username}!")
+    else:
+        messages.info(request, f"You already follow {user_to_follow.username}.")
+
+    return redirect('web:users:detail', pk=pk)
 
 
 @login_required
-def unfollow_user(request, username):
-    user_to_unfollow = get_object_or_404(AppUser, username=username)
+def unfollow_user(request, pk):
+    user_to_unfollow = get_object_or_404(AppUser, pk=pk)
     if request.user == user_to_unfollow:
         messages.error(request, "You cannot unfollow yourself.")
-        return redirect('users:detail', username=username)
+        return redirect('web:users:detail', pk=pk)
     Following.objects.filter(
         user=request.user,
         following_user=user_to_unfollow
     ).delete()
-    return redirect('users:detail', username=username)
+    return redirect('web:users:detail', pk=pk)
 
 
 @login_required
@@ -232,7 +238,7 @@ def send_confirmation_email(request, user):
     send_mail(
         subject=subject,
         message=text_message,
-        from_email='noreply@djangogramm.com',
+        from_email='noreply@djangogramm.pp.ua',
         recipient_list=[user.email],
         html_message=message
     )
@@ -240,37 +246,31 @@ def send_confirmation_email(request, user):
 
 def complete_registration(request, uid64, token):
     try:
-        print(f"Starting account activation. uid64: {uid64}, token: {token}")  # Debug
-        uid = force_str(urlsafe_base64_decode(uid64))
-        print(f"Decoded uid: {uid}")  # Debug
 
+        uid = force_str(urlsafe_base64_decode(uid64))
         user = AppUser.objects.get(pk=uid)
-        print(f"Found user: {user.username}")  # Debug
 
         if user.is_active and user.is_email_confirmed:
             messages.info(request, "Email was already confirmed. You can login to your account.")
             return redirect('web:auth:login')
 
         if default_token_generator.check_token(user, token):
-            print("Token confirmed")  # Debug
             user.is_active = True
             user.is_email_confirmed = True
             user.save()
-            print(f"User activated: {user.is_active}, email confirmed: {user.is_email_confirmed}")  # Debug
-
             messages.success(request, "Email confirmed successfully. Please login to your account.")
             return redirect('web:auth:login')
         else:
-            print("Invalid token")  # Debug
+            print("Invalid token")
             messages.error(request, "The confirmation link has expired. Please request a new one.")
             return redirect('web:auth:register')
 
     except (TypeError, ValueError, OverflowError) as e:
-        print(f"Decoding error: {str(e)}")  # Debug
+        print(f"Decoding error: {str(e)}")
         messages.error(request, "Invalid confirmation link format.")
         return redirect('web:auth:register')
     except AppUser.DoesNotExist as e:
-        print(f"User not found: {str(e)}")  # Debug
+        print(f"User not found: {str(e)}")
         messages.error(request, "User account not found. Please register again.")
         return redirect('web:auth:register')
 
@@ -383,58 +383,6 @@ def user_detail(request, username):
         'following_count': following_count,
     }
     return render(request, 'user_detail.html', context)
-
-
-def test_mailjet(request):
-    try:
-        print("Starting email sending...")  # Debug output
-        send_mail(
-            'Test Email',
-            'Test message',
-            'noreply@djangogramm.com',
-            ['test@example.com'],
-            fail_silently=False,
-        )
-        print("Email sent successfully!")  # Debug output
-        messages.success(request, "Test email sent! Check server console.")
-    except Exception as e:
-        print(f"Error sending email: {str(e)}")  # Debug output
-        messages.error(request, f"Error sending email: {str(e)}")
-    return redirect('web:home')
-
-
-def test_html_email(request):
-    try:
-        print("Starting HTML email sending...")  # Debug output
-
-        # Create test user for template
-        test_user = type('User', (), {'username': 'TestUser'})()
-
-        # Generate test activation link
-        test_activation_link = "http://127.0.0.1:8000/test-activation-link"
-
-        # Render HTML template
-        html_message = render_to_string('email_confirmation.html', {
-            'user': test_user,
-            'activation_link': test_activation_link
-        })
-
-        # Send email
-        send_mail(
-            'Test HTML Email',
-            'This is a test message (text version)',
-            'noreply@djangogramm.com',
-            ['test@example.com'],
-            fail_silently=False,
-            html_message=html_message
-        )
-
-        print("HTML email sent successfully!")  # Debug output
-        messages.success(request, "Test HTML email sent! Check server console.")
-    except Exception as e:
-        print(f"Error sending HTML email: {str(e)}")  # Debug output
-        messages.error(request, f"Error sending email: {str(e)}")
-    return redirect('web:home')
 
 
 @login_required

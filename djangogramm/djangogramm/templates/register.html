@@ -10,7 +10,6 @@
         <form class="form-group p-2" action={% url 'web:auth:register' %} method="POST">
             {% csrf_token %}
             <h4 class="p-3">Wellcome to Sign Up  page </h4>
-
             {% for field in form %}
                 <label for="id_{{ field.name }}" class="form-label mb-1 mt-2">{{ field.label }}</label>
                 <div class="input-group mb-2">{{ field }}</div>
@@ -21,8 +20,8 @@
                         <div class="text-danger">{{ field.errors }}</div>
                     {% endif %}
             {% endfor %}
-        <button type="submit" class="btn btn-primary mt-3">Register</button>
-        <p>Already has an account? <a href="{%url 'web:auth:login' %}">Login</a></p>
+            <button type="submit" class="btn btn-primary mt-3">Register</button>
+            <p>Already has an account? <a href="{%url 'web:auth:login' %}">Login</a></p>
         </form>
     </div>
 {% endblock %}

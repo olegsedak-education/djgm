@@ -7,14 +7,12 @@
     <div class="list-group">
         <h2 class="h2 p-2">{{ post.title }}</h2>
         <p class="p-2">{{ post.text }}</p>
-        
         {% if post.tags.all %}
         <div class="p-2">
             <h5>Tags:</h5>
             <div class="d-flex flex-wrap gap-2">
                 {% for tag in post.tags.all %}
-                    <a href="{% url 'web:posts:by_tag' tag.name %}" 
-                       class="badge bg-primary text-decoration-none">
+                    <a href="{% url 'web:posts:by_tag' tag.name %}" class="badge bg-primary text-decoration-none">
                         #{{ tag.name }}
                     </a>
                 {% endfor %}

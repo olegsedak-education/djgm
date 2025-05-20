@@ -1,34 +1,26 @@
+from django.conf import settings
+from django.contrib.auth.views import LogoutView
 from django.urls import path, include
 from django.views.generic.base import TemplateView
-from django.contrib.auth.views import LogoutView
-from django.conf import settings
-from . import views
 
+from . import views
 
 app_name = 'web'
 
 auth_patterns = [
     path("register/", views.sign_up, name="register"),
-    path(
-        "register/complete/<uid64>/<str:token>/",
-        views.complete_registration,
-        name="complete_registration"
-    ),
+    path("register/complete/<uid64>/<str:token>/", views.complete_registration, name="complete_registration"),
     path("login/", views.sign_in, name="login"),
-    path(
-        "logout/",
-        LogoutView.as_view(next_page=settings.LOGOUT_REDIRECT_URL),
-        name="logout"
-    ),
+    path("logout/", LogoutView.as_view(next_page=settings.LOGOUT_REDIRECT_URL), name="logout"),
 ]
 
 user_patterns = [
     path("", views.users_list, name="list"),
     path("<int:pk>/", views.user_profile, name="detail"),
-    path("<str:username>/follow/", views.follow_user, name="follow"),
-    path("<str:username>/unfollow/", views.unfollow_user, name="unfollow"),
-    path("<str:username>/followers/", views.followers_list, name="followers"),
-    path("<str:username>/following/", views.following_list, name="following"),
+    path("<int:pk>/follow/", views.follow_user, name="follow"),
+    path("<int:pk>/unfollow/", views.unfollow_user, name="unfollow"),
+    path("<int:pk>/followers/", views.followers_list, name="followers"),
+    path("<int:pk>/following/", views.following_list, name="following"),
     path("<int:pk>/edit/", views.edit_profile, name="edit_profile"),
 ]
 
@@ -57,6 +49,4 @@ urlpatterns = [
     path("posts/", include((post_patterns, "posts"))),
     path("tags/", include((tag_patterns, "tags"))),
     path("feed/", views.feed, name="feed"),
-    path("test-mailjet/", views.test_mailjet, name="test_mailjet"),
-    path("test-html-email/", views.test_html_email, name="test_html_email"),
 ]

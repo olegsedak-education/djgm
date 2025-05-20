@@ -4,6 +4,7 @@ from .models import AppUser, UserProfile, Post, Tag
 from cloudinary.forms import CloudinaryFileField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Field, Submit
+from crispy_bootstrap5.bootstrap5 import FloatingField
 
 
 class LoginForm(forms.Form):
@@ -59,20 +60,7 @@ class PostForm(forms.ModelForm):
                 css_class='form-floating mb-3 ms-3 pe-3'
             ),
             Div(
-                Field(
-                    'text',
-                    css_class='form-control',
-                    rows=4,
-                    placeholder='Describe your post'
-                ),
-                css_class='form-floating mb-3 ms-3 pe-3'
-            ),
-            Div(
-                Field(
-                    'tags',
-                    css_class='form-control',
-                    placeholder='Enter tags separated by commas'
-                ),
+                Field('text', css_class='form-control', rows=4, placeholder='Describe your post'),
                 css_class='form-floating mb-3 ms-3 pe-3'
             ),
             Div(

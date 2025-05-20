@@ -58,7 +58,7 @@ class ReactionType(Enum):
 
 
 class Image(models.Model):
-    image = models.ImageField(upload_to='images/')
+    image = CloudinaryField('image')
     uploadede_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
