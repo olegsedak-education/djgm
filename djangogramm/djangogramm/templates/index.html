@@ -6,24 +6,20 @@
 {% endblock %}
 
 {% block extra_head %}
-{% include 'includes/navbar_home.html' %}
+    {% include 'includes/navbar_home.html' %}
 {% endblock %}
-
-{% block body %}
-    
-    {% block content %}
-        {% if user.is_authenticated %}
-            <div class="alert alert-info fs-6 text-center font-monospace" role="alert"> Hi, {{ user.username }}!</div>
-            <div class="container text-center">
-                <form action="{% url 'web:posts:create' %}">
+{% block content %}
+    {% if user.is_authenticated %}
+        <div class="alert alert-info fs-6 text-center font-monospace" role="alert"> Hi, {{ user.username }}!</div>
+        <div class="container text-center">
+            <form action="{% url 'web:posts:create' %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-success btn-sm me-4 mt-3 mb-4">Create Post</button>
-                </form>
-            </div>
-        {% else %}
-            <div class="alert alert-secondary text-center" role="alert">You are not logged in</div>
-        {% endif %}
-    {% endblock %}    
-    <h3 class="h3 text-center">Wellcome to Djangogramm</h3>
-    <p class="p-1 text-center">This is the main page</p>
+            </form>
+        </div>
+    {% else %}
+        <div class="alert alert-secondary text-center" role="alert">You are not logged in</div>
+    {% endif %}
 {% endblock %}
+<h3 class="h3 text-center">Wellcome to Djangogramm</h3>
+<p class="p-1 text-center">This is the main page</p>

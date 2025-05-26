@@ -10,7 +10,7 @@
             DjangoGramm
         {% endblock %}
     </title>
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
@@ -21,19 +21,19 @@
     {% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
-    {% block navbar %}
-    {% endblock %}
-    {% block body %}
-        <main class="flex-grow-1">
-            {% block content %}{% endblock %}
-        </main>
+{% block navbar %}
+{% endblock %}
+{% block body %}
+    <main class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
 
     {% include 'includes/footer.html' %}
 
-    {% endblock %}    
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'js/lazysizes.min.js' %}"></script>
-    {% block extra_js %}
-    {% endblock %}
+{% endblock %}
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/lazysizes.min.js' %}"></script>
+{% block extra_js %}
+{% endblock %}
 </body>
 </html>

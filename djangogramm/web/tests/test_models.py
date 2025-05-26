@@ -1,10 +1,10 @@
-from django.test import TestCase
 from datetime import date, timedelta
-from django.utils import timezone
 from io import BytesIO
+
 from PIL import Image as PILImage
 from django.core.files.uploadedfile import SimpleUploadedFile
-
+from django.test import TestCase
+from django.utils import timezone
 
 from ..models import *
 
@@ -13,10 +13,9 @@ NUMBER_OF_USERS = 5
 
 class AppUserModelTest(TestCase):
 
-
     def setUp(self):
         self.users = []
-        for number in range(1, NUMBER_OF_USERS+1):
+        for number in range(1, NUMBER_OF_USERS + 1):
             username = f"test_user{number}"
             password = f"{number}testuserspassword"
             email = f"{number}testusermail@mail.com"
@@ -33,7 +32,6 @@ class AppUserModelTest(TestCase):
             self.assertEqual(user.email, f"{number}testusermail@mail.com")
             self.assertTrue(user.check_password(f"{number}testuserspassword"))
 
-
     def test_user_str_method(self):
         for number, user in enumerate(self.users, 1):
             self.assertEqual(str(user), f"test_user{number}")
@@ -44,7 +42,7 @@ class UserProfileModelTest(TestCase):
     def setUp(self):
         self.users = []
         self.profiles = []
-        for number in range(1, NUMBER_OF_USERS+1):
+        for number in range(1, NUMBER_OF_USERS + 1):
             username = f"test_user{number}"
             password = f"{number}testuserspassword"
             email = f"{number}testusermail@mail.com"
@@ -56,18 +54,16 @@ class UserProfileModelTest(TestCase):
             self.users.append(user)
             profile = UserProfile.objects.create(
                 user=user,
-                birth_date=date(1990+number, number, number),
+                birth_date=date(1990 + number, number, number),
                 bio=f"Bio for {user.username}"
             )
             self.profiles.append(profile)
 
-
     def test_user_profile_creation(self):
         for number, profile in enumerate(self.profiles, 1):
             self.assertEqual(profile.user.username, f"test_user{number}")
-            self.assertEqual(profile.birth_date, date(1990+number, number, number)),
+            self.assertEqual(profile.birth_date, date(1990 + number, number, number)),
             self.assertEqual(profile.bio, f"Bio for test_user{number}")
-
 
     def test_user_profile_str_method(self):
         for number, profile in enumerate(self.profiles, 1):
@@ -148,7 +144,6 @@ class CommentModelTest(TestCase):
         self.assertEqual(self.comment.post.text, "This is a test post")
         self.assertEqual(self.comment.text, "This is a test comment")
 
-
     def test_comment_str_method(self):
         self.assertEqual(str(self.comment), "This is a test comment, test_user, Test post")
 
@@ -177,10 +172,8 @@ class PostRectionModelTest(TestCase):
         self.assertEqual(self.post_reaction.post.title, "Test post")
         self.assertEqual(self.post_reaction.reaction, ReactionType.LIKE)
 
-
     def test_get_reaction_type(self):
         self.assertEqual(self.post_reaction.get_reaction_type(), "Like")
-
 
     def test_post_reaction_str_method(self):
         self.assertEqual(str(self.post_reaction), "PostReaction: Like by test_user on Test post")
@@ -215,10 +208,8 @@ class CommentRectionModelTest(TestCase):
         self.assertEqual(self.comment_reaction.comment.text, "This is a test comment")
         self.assertEqual(self.comment_reaction.reaction, ReactionType.LIKE)
 
-
     def test_get_reaction_type(self):
         self.assertEqual(self.comment_reaction.get_reaction_type(), "Like")
-
 
     def test_post_reaction_str_method(self):
         self.assertEqual(str(self.comment_reaction),
@@ -229,20 +220,32 @@ class TestTagModel(TestCase):
 
     def setUp(self):
         self.user = AppUser.objects.create_user(
-            username="test_user",
-            password="test_password"
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
         )
         self.post = Post.objects.create(
             author=self.user,
             title="Test post",
-            text="This is a test post"
+            text='Test Content'
         )
-        self.tag = Tag.objects.create(name="test tag name")
+        self.tag = Tag.objects.create(name="test_tag_name")
         self.post.tags.add(self.tag)
 
     def test_tag_creation(self):
-        self.assertEqual(self.tag.name, "test tag name")
+        self.assertEqual(self.tag.name, "test_tag_name")
+        self.assertTrue(isinstance(self.tag, Tag))
         self.assertEqual(self.tag.posts.first().title, "Test post")
 
+    def test_tag_unique_name(self):
+        with self.assertRaises(Exception):
+            Tag.objects.create(name='test_tag_name')
+
+    def test_tag_post_relationship(self):
+        self.post.tags.add(self.tag)
+        self.assertEqual(self.post.tags.count(), 1)
+        self.assertEqual(self.tag.posts.count(), 1)
+        self.assertEqual(self.tag.posts.first(), self.post)
+
     def test_tag_str_method(self):
-        self.assertEqual(str(self.tag), "test tag name")
+        self.assertEqual(str(self.tag), "test_tag_name")

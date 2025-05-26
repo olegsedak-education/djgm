@@ -1,15 +1,10 @@
 from io import BytesIO
-
 from PIL import Image as PILImage
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-
-from ..models import (
-    AppUser, UserProfile, Post, Image, Tag,
-    PostReaction, ReactionType, Following
-)
+from ..models import ( AppUser, UserProfile, Post, Image, Tag, PostReaction, ReactionType, Following)
 
 AppUser = get_user_model()
 
@@ -30,6 +25,7 @@ class UserProfileViewTest(TestCase):
             bio="Test Bio"
         )
 
+
     def test_user_profile_view(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(reverse('web:users:detail', args=[self.user.id]))
@@ -48,6 +44,7 @@ class FeedViewTest(TestCase):
             password=self.password,
             email=self.email
         )
+
 
     def test_feed_view(self):
         self.client.login(username=self.username, password=self.password)
@@ -76,6 +73,7 @@ class PostsListViewTest(TestCase):
             text="This is a test post 2 text"
         )
 
+
     def test_posts_list_view(self):
         response = self.client.get(reverse('web:posts:list'))
         self.assertEqual(response.status_code, 200)
@@ -99,6 +97,7 @@ class PostDetailViewTest(TestCase):
             title="Test post 1",
             text="This is a test post 1 text"
         )
+
 
     def test_post_detail_view(self):
         response = self.client.get(reverse('web:posts:detail', args=[self.post.id]))
@@ -133,6 +132,7 @@ class CreatePostViewTest(TestCase):
             'image_urls': 'http://example.com/test.jpg'
         }
 
+
     def test_create_post_with_image(self):
         self.client.logout()
         self.client.login(username=self.username, password=self.password)
@@ -140,6 +140,7 @@ class CreatePostViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Post.objects.filter(title="Test Post").exists())
         self.assertTrue(Image.objects.exists())
+
 
     def test_create_post_get_request(self):
         self.client.logout()
@@ -171,12 +172,14 @@ class UsersListViewTest(TestCase):
             email=self.email
         )
 
+
     def test_users_list_view_as_admin(self):
         self.client.logout()
         self.client.login(username=self.admin_username, password=self.admin_password)
         response = self.client.get(reverse('web:users:list'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'users_list.html')
+
 
     def test_users_list_view_as_non_admin(self):
         self.client.logout()
@@ -205,6 +208,7 @@ class EditPostViewTest(TestCase):
         self.tag = Tag.objects.create(name="test")
         self.post.tags.add(self.tag)
 
+
     def test_edit_post_get_request(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.get(
@@ -215,6 +219,7 @@ class EditPostViewTest(TestCase):
         self.assertContains(response, "Test post")
         self.assertContains(response, "This is a test post")
         self.assertContains(response, "test")
+
 
     def test_edit_post_with_tags(self):
         self.client.login(username=self.username, password=self.password)
@@ -312,6 +317,7 @@ class PostReactionViewTest(TestCase):
             text="This is a test post"
         )
 
+
     def test_like_post(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.post(
@@ -325,6 +331,7 @@ class PostReactionViewTest(TestCase):
                 reaction=ReactionType.LIKE
             ).exists()
         )
+
 
     def test_unlike_post(self):
         PostReaction.objects.create(
@@ -345,6 +352,7 @@ class PostReactionViewTest(TestCase):
             ).exists()
         )
 
+
     def test_dislike_post(self):
         self.client.login(username=self.username, password=self.password)
         response = self.client.post(
@@ -358,6 +366,7 @@ class PostReactionViewTest(TestCase):
                 reaction=ReactionType.DISLIKE
             ).exists()
         )
+
 
     def test_undislike_post(self):
         PostReaction.objects.create(
@@ -377,6 +386,7 @@ class PostReactionViewTest(TestCase):
                 post=self.post
             ).exists()
         )
+
 
     def test_post_detail_with_reactions(self):
         PostReaction.objects.create(

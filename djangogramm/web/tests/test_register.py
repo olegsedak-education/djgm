@@ -1,23 +1,16 @@
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
-from ..forms import RegisterForm
+
 from ..models import AppUser
 
 
 class RegisterTest(TestCase):
-    username = 'newtestuser1'
-    email = 'newtestuseremail@email.com'
-    password = 'Alltestuserspassword'
 
-
-    def test_register_form(self):
-        form = RegisterForm(data={'username': self.username,
-                                  'email': self.email,
-                                  'password1': self.password,
-                                  'password2': self.password})
-        self.assertTrue(form.is_valid())
-
+    def setUp(self):
+        self.username = 'newtestuser1'
+        self.email = 'newtestuseremail@email.com'
+        self.password = 'Alltestuserspassword'
 
     def test_successful_register(self):
         response = self.client.post(reverse('web:auth:register'),

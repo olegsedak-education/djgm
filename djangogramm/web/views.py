@@ -83,22 +83,35 @@ def user_profile(request, pk):
     profile, created = UserProfile.objects.get_or_create(user=user)
     return render(request, "user_profile.html", {'user': user, 'profile': profile})
 
+    if request.user != user:
+        return HttpResponseForbidden("403 Forbidden: You can only edit your own profile")
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=profile, user=user)
+        if form.is_valid():
+            form.save(user=user)
+            messages.success(request, "Profile updated successfully.")
+            return redirect('web:users:detail', pk=user.pk)
+    else:
+        form = UserProfileForm(instance=profile, user=user)
+
+    return render(request, 'edit_profile.html', {'form': form, 'user': user})
+
 
 def post_detail(request, pk):
-    post = get_object_or_404(Post, id=pk)
+    post = get_object_or_404(Post, pk=pk)
+
     user_reaction = None
-
     if request.user.is_authenticated:
-        try:
-            reaction = PostReaction.objects.get(user=request.user, post=post)
-            user_reaction = reaction.reaction.name
-        except PostReaction.DoesNotExist:
-            pass
+        reaction = PostReaction.objects.filter(
+            user=request.user,
+            post=post
+        ).first()
 
-    context = {
-        'post': post,
-        'user_reaction': user_reaction
-    }
+        if reaction:
+            user_reaction = reaction.reaction.value
+    context = {'post': post, 'user_reaction': user_reaction, }
+
     return render(request, "post_detail.html", context)
 
 
@@ -106,7 +119,7 @@ def users_list(request):
     if not request.user.is_staff:
         return HttpResponseForbidden("403 Forbidden: Access denied")
     users = AppUser.objects.all()
-    return render(request, 'users_list.html')
+    return render(request, 'users_list.html', {'users': users})
 
 
 @login_required

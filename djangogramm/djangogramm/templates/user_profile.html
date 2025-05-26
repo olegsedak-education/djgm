@@ -20,9 +20,14 @@
                         <img src="/media/default/default_avatar.webp" class="rounded" alt="Avatar">
                     {% endif %}
                     <h2>{{ user.username }}'s Profile</h2>
+                    {% if request.user == user %}
+                        <a href="{% url 'web:users:edit_profile' pk=user.pk %}" class="btn btn-primary mt-2">Edit
+                            Profile</a>
+                    {% endif %}
                 </div>
                 <ul class="list-group">
-                    <li class="list-group-item"><strong>Full name:</strong> {{ user.first_name }} {{ user.last_name }}</li>
+                    <li class="list-group-item"><strong>Full name:</strong> {{ user.first_name }} {{ user.last_name }}
+                    </li>
                     <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
                     <li class="list-group-item"><strong>Bio:</strong> {{ profile.bio }}</li>
                     <li class="list-group-item"><strong>Birth date:</strong> {{ profile.birth_date }}</li>

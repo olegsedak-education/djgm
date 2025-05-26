@@ -124,19 +124,3 @@ class UserProfileForm(forms.ModelForm):
             profile.save()
 
         return profile
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

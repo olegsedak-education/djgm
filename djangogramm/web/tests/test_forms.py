@@ -1,49 +1,55 @@
-from django.test import TestCase
 from unittest.mock import patch
+
+from django.test import TestCase
 
 from ..forms import RegisterForm, LoginForm, PostForm, UserProfileForm, TagForm
 from ..models import AppUser, Tag
 
 
 class RegisterFormTest(TestCase):
-    def test_register_form_valid_data(self):
-        form_data = {
+
+    def setUp(self):
+        self.form_data = {
             'username': 'testuser',
             'email': 'test@example.com',
             'password1': 'testpass123',
             'password2': 'testpass123'
         }
-        form = RegisterForm(data=form_data)
+
+    def test_register_form_valid_data(self):
+        form = RegisterForm(data=self.form_data)
         self.assertTrue(form.is_valid())
 
     def test_register_form_invalid_data(self):
-        form_data = {
-            'username': 'testuser',
+        invalid_form_data = {
+            'username': '_',
             'email': 'invalid-email',
-            'password1': 'testpass123',
+            'password1': '123',
             'password2': 'differentpass'
         }
-        form = RegisterForm(data=form_data)
+        form = RegisterForm(data=invalid_form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('email', form.errors)
         self.assertIn('password2', form.errors)
 
 
 class LoginFormTest(TestCase):
+
+    def setUp(self):
+        self.username = 'testuser1'
+        self.password = 'Alltestuserspassword'
+        self.user = AppUser.objects.create_user(username=self.username, password=self.password)
+
     def test_login_form_valid_data(self):
-        form_data = {
-            'username': 'testuser',
-            'password': 'testpass123'
-        }
-        form = LoginForm(data=form_data)
+        form = LoginForm(data={'username': self.username, 'password': self.password})
         self.assertTrue(form.is_valid())
 
     def test_login_form_invalid_data(self):
-        form_data = {
+        invalid_form_data = {
             'username': '',
             'password': ''
         }
-        form = LoginForm(data=form_data)
+        form = LoginForm(data=invalid_form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('username', form.errors)
         self.assertIn('password', form.errors)
@@ -56,7 +62,7 @@ class PostFormTest(TestCase):
             password='testpass123',
             email='test@example.com'
         )
-        self.tag = Tag.objects.create(name='test')
+        self.tag = Tag.objects.create(name='test_tag')
 
     def test_post_form_valid_data(self):
         form_data = {
@@ -143,6 +149,13 @@ class UserProfileFormTest(TestCase):
 
 
 class TagFormTest(TestCase):
+    def setUp(self):
+        self.user = AppUser.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+
     def test_tag_form_valid_data(self):
         form_data = {
             'name': 'newtag'
@@ -166,3 +179,36 @@ class TagFormTest(TestCase):
         form = TagForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('name', form.errors)
+
+    def test_post_form_with_tags(self):
+        form_data = {
+            'title': 'Test Post',
+            'text': 'Test Content',
+            'tags': 'tag1, tag2, tag3'
+        }
+        form = PostForm(data=form_data)
+        self.assertTrue(form.is_valid())
+        post = form.save(commit=False)
+        post.author = self.user
+        post.save()
+        form.save()
+
+        self.assertEqual(post.tags.count(), 3)
+        self.assertTrue(Tag.objects.filter(name='tag1').exists())
+        self.assertTrue(Tag.objects.filter(name='tag2').exists())
+        self.assertTrue(Tag.objects.filter(name='tag3').exists())
+
+    def test_post_form_empty_tags(self):
+        form_data = {
+            'title': 'Test Post',
+            'text': 'Test Content',
+            'tags': ''
+        }
+        form = PostForm(data=form_data)
+        self.assertTrue(form.is_valid())
+        post = form.save(commit=False)
+        post.author = self.user
+        post.save()
+        form.save()
+
+        self.assertEqual(post.tags.count(), 0)

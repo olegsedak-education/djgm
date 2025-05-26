@@ -1,7 +1,7 @@
 from django.test import TestCase
-from ..forms import LoginForm
-from ..models import AppUser
 from django.urls import reverse
+
+from ..models import AppUser
 
 
 class LogInTest(TestCase):
@@ -11,12 +11,6 @@ class LogInTest(TestCase):
         self.password = 'Alltestuserspassword'
         self.user = AppUser.objects.create_user(username=self.username, password=self.password)
 
-
-    def test_login_form(self):
-        form = LoginForm(data={'username': self.username, 'password': self.password})
-        self.assertTrue(form.is_valid())
-
-
     def test_successful_login(self):
         response = self.client.post(
             reverse('web:auth:login'),
@@ -24,7 +18,6 @@ class LogInTest(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('web:home'))
-
 
     def test_invalid_login(self):
         response = self.client.post(
