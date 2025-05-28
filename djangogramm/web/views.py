@@ -109,7 +109,7 @@ def post_detail(request, pk):
         ).first()
 
         if reaction:
-            user_reaction = reaction.reaction.value
+            user_reaction = reaction.reaction.name
     context = {'post': post, 'user_reaction': user_reaction, }
 
     return render(request, "post_detail.html", context)
